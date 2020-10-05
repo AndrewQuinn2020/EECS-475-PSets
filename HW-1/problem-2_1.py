@@ -7,12 +7,12 @@
 
 # See problem-2-1.png for the problem statement.
 
-import numpy as np
-from matplotlib import pyplot as plt
 import math
 import itertools
-from fractions import Fraction
 import os
+
+import numpy as np
+from matplotlib import pyplot as plt
 
 script_dir = os.path.dirname(__file__)
 figs_dir = os.path.join(script_dir, "figs")
