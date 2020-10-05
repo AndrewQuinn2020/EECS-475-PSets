@@ -159,6 +159,20 @@ def linspace_points(N=2, size=2, P=100, verbose=False):
     return cartesian(list(itertools.repeat(spacings, N)))
 
 
+def random_point_in_cube(N=2, size=2):
+    """Generates a row vector representing a random point in the
+    N-dimensional hypercube [-size/2.0, +size/2.0]^N."""
+    return (np.random.rand(1, N) * size) + -size/2.0
+
+def random_points_in_cube(N=2, size=2, P=100, verbose=False):
+    """Returns an array of uniformly randomly distributed points on the
+    N-dimensional hypercube [-size/2.0, +size/2.0]^N. Unlike linspace_points,
+    this one can always return exactly P points, because we're not under
+    any compunction to space these points out uniformly."""
+    return (np.random.rand(P, N) * size) + -size/2.0
+
+
+
 def g_minimized_by_dimensions(point_gen, N=100, P=100, verbose=False):
     """Returns a list of the minimum values of g(w), using points specified
     via the point_generator, from 1-D to N-D, inclusive."""
@@ -223,6 +237,31 @@ if __name__ == "__main__":
     plt.plot(list(range(1, 100+1)), values_to_plot_2_1_a, '.')
     plt.show(block=False)
     plt.savefig(os.path.join(figs_dir,'2_1_a.png'))
-    print(":D")
-    for P in [100, 1000, 10000]:
-        print(g_minimized_by_dimensions(linspace_points, N=100, P=P))
+    print("(Figure saved to figs/2_1_a.png)")
+    plt.clf()
+
+    print("\n" * 5)
+    print("2.1.(b).")
+    print("")
+
+    for point_generator in [linspace_points, random_points_in_cube]:
+        if point_generator == linspace_points:
+            subproblem = "b"
+        elif point_generator == random_points_in_cube:
+            subproblem = "c"
+        else:
+            subproblem = "?????"
+
+        for P in [100, 1000, 10000]:
+            vals = g_minimized_by_dimensions(point_generator, N=100, P=P)
+            print("P = {} -> y vals = {}".format(P, vals))
+            plt.title("2.1.({}) - P = {}".format(subproblem, P))
+            plt.xlabel("N (dimensions)")
+            plt.ylabel("min {g(w)}")
+            plt.plot(list(range(1, 100+1)), vals, '.')
+            plt.show(block=False)
+            plt.savefig(os.path.join(figs_dir,
+                                     '2_1_{}_{}.png'.format(subproblem, P)))
+            print("(Figure saved to figs/2_1_{}_{}.png)".format(subproblem, P))
+            print("\n")
+            plt.clf()
