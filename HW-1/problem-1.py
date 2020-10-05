@@ -8,8 +8,14 @@
 # See problem-2-1.png for the problem statement.
 
 import numpy as np
+from matplotlib import pyplot as plt
 import math
 import itertools
+from fractions import Fraction
+import os
+
+script_dir = os.path.dirname(__file__)
+figs_dir = os.path.join(script_dir, "figs")
 
 def cartesian(arrays, out=None):
     """
@@ -84,7 +90,7 @@ def points_per_dimension(N=2, ppd=100, verbose=False):
     I chose to floor rather than ceiling these, because I didn't want
     to end up causing a combinatorial explosion on my hardware. This is
     of course the curse of dimensionality being talked about here."""
-    raw_cut = np.power(100, 1/N)
+    raw_cut = np.power(ppd, 1/N)
     cut = math.floor(raw_cut)
     cuts_total = np.power(cut, N)
     if verbose:
@@ -136,7 +142,10 @@ def linspace_n_dimensions(N, size=2, ideal_size=100, verbose=False):
 
     # all_spacings = itertools.repeat(spacings, N)
 
+    assert len(spacings) <= ideal_size
+
     return spacings
+
 
 def linspace_points(N=2, size=2, P=100, verbose=False):
     """Returns an array of evenly spaced points on the N-dimensional
@@ -150,6 +159,23 @@ def linspace_points(N=2, size=2, P=100, verbose=False):
     return cartesian(list(itertools.repeat(spacings, N)))
 
 
+def g_minimized_by_dimensions(point_gen, N=100, P=100, verbose=False):
+    """Returns a list of the minimum values of g(w), using points specified
+    via the point_generator, from 1-D to N-D, inclusive."""
+
+    return_list = list()
+
+    for N in range(1, N+1):
+        hypercube_points = point_gen(N=N, P=P)
+        min_g = min(map(g, hypercube_points))
+        if verbose:
+            print("P = {} :: N = {} :: min g(w) = {}".format(P, N, min_g))
+        return_list.append(min_g)
+
+    return return_list
+
+
+
 if __name__ == "__main__":
     print("Andrew Quinn\nEECS 375 - HW 1 - Problem 2.1\n" + ("-" * 80))
 
@@ -161,6 +187,42 @@ if __name__ == "__main__":
     #
     # print(np.linspace(-1, 1, 100))
 
-    for i in range(1, 100):
-        print(linspace_points(i))
-        print(len(linspace_points(i)))
+    print("\n")
+    print("2.1.(a).")
+    print("")
+    print("Before I go on, you should know that I *did* implement this as a")
+    print("uniform sampling - but I wanted the set of points I was going")
+    print("to work with to be rotationally invariant.")
+    print("")
+    print("What that means is, let's say we were sampling [-1, 1]^3, and")
+    print("we ended up getting 2 distinct values per axis -- in this algo,")
+    print("those two values would have to be +/- 1/3, and your 8 uniformly")
+    print("sampled points would all come from the set")
+    print("")
+    print("    S = {(x, y, z) | x, y, z \in {1/3, -1/3} }")
+    print("")
+    print("In other words, you would have 8 points, and if you 'rotated'")
+    print("all of the points in that set about the origin by 90 degrees")
+    print("in the x, y, or z directions -- you would actually end up with")
+    print("the same set of points again. Hence 'rotationally-invariant'.")
+    print("")
+    print("I did this partly as a challenge, and partly because these kinds")
+    print("of uniform samplings have useful properties, and I might want to")
+    print("use the code I wrote here to generate them for N-cubes later on.")
+    print("It works fast!")
+    print("")
+    print((" " * 8) + "With that out of the way...")
+    print("")
+
+    values_to_plot_2_1_a = g_minimized_by_dimensions(linspace_points, N=100,
+                                                     P=100)
+
+    plt.title("2.1.(a) - min g(w) by dimension (rotationally-invariant sampling)")
+    plt.xlabel("N (dimensions)")
+    plt.ylabel("min {g(w)}")
+    plt.plot(list(range(1, 100+1)), values_to_plot_2_1_a, '.')
+    plt.show(block=False)
+    plt.savefig(os.path.join(figs_dir,'2_1_a.png'))
+    print(":D")
+    for P in [100, 1000, 10000]:
+        print(g_minimized_by_dimensions(linspace_points, N=100, P=P))
