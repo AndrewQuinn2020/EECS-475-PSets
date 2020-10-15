@@ -7,8 +7,8 @@
 
 # See problem-2-1.png for the problem statement.
 
-import math
 import itertools
+import math
 import os
 
 import numpy as np
@@ -16,6 +16,7 @@ from matplotlib import pyplot as plt
 
 script_dir = os.path.dirname(__file__)
 figs_dir = os.path.join(script_dir, "figs")
+
 
 def cartesian(arrays, out=None):
     """
@@ -69,7 +70,7 @@ def cartesian(arrays, out=None):
     if arrays[1:]:
         cartesian(arrays[1:], out=out[0:m, 1:])
         for j in range(1, arrays[0].size):
-            out[j*m:(j+1)*m, 1:] = out[0:m, 1:]
+            out[j * m : (j + 1) * m, 1:] = out[0:m, 1:]
     return out
 
 
@@ -90,7 +91,7 @@ def points_per_dimension(N=2, ppd=100, verbose=False):
     I chose to floor rather than ceiling these, because I didn't want
     to end up causing a combinatorial explosion on my hardware. This is
     of course the curse of dimensionality being talked about here."""
-    raw_cut = np.power(ppd, 1/N)
+    raw_cut = np.power(ppd, 1 / N)
     cut = math.floor(raw_cut)
     cuts_total = np.power(cut, N)
     if verbose:
@@ -122,8 +123,8 @@ def linspace_n_dimensions(N, size=2, ideal_size=100, verbose=False):
     return a single array value - 0.5.
     """
 
-    start = -size/2.0
-    end   = size/2.0
+    start = -size / 2.0
+    end = size / 2.0
 
     if verbose:
         print("We are splitting the [{}, {}]^N hypercube.".format(start, end))
@@ -153,8 +154,7 @@ def linspace_points(N=2, size=2, P=100, verbose=False):
     exactly in the return, unless P is itself the N'th power of some
     integer."""
 
-    spacings = linspace_n_dimensions(N=N, size=size, ideal_size=P,
-                                     verbose=verbose)
+    spacings = linspace_n_dimensions(N=N, size=size, ideal_size=P, verbose=verbose)
 
     return cartesian(list(itertools.repeat(spacings, N)))
 
@@ -162,15 +162,15 @@ def linspace_points(N=2, size=2, P=100, verbose=False):
 def random_point_in_cube(N=2, size=2):
     """Generates a row vector representing a random point in the
     N-dimensional hypercube [-size/2.0, +size/2.0]^N."""
-    return (np.random.rand(1, N) * size) + -size/2.0
+    return (np.random.rand(1, N) * size) + -size / 2.0
+
 
 def random_points_in_cube(N=2, size=2, P=100, verbose=False):
     """Returns an array of uniformly randomly distributed points on the
     N-dimensional hypercube [-size/2.0, +size/2.0]^N. Unlike linspace_points,
     this one can always return exactly P points, because we're not under
     any compunction to space these points out uniformly."""
-    return (np.random.rand(P, N) * size) + -size/2.0
-
+    return (np.random.rand(P, N) * size) + -size / 2.0
 
 
 def g_minimized_by_dimensions(point_gen, N=100, P=100, verbose=False):
@@ -179,7 +179,7 @@ def g_minimized_by_dimensions(point_gen, N=100, P=100, verbose=False):
 
     return_list = list()
 
-    for N in range(1, N+1):
+    for N in range(1, N + 1):
         hypercube_points = point_gen(N=N, P=P)
         min_g = min(map(g, hypercube_points))
         if verbose:
@@ -187,7 +187,6 @@ def g_minimized_by_dimensions(point_gen, N=100, P=100, verbose=False):
         return_list.append(min_g)
 
     return return_list
-
 
 
 if __name__ == "__main__":
@@ -228,15 +227,14 @@ if __name__ == "__main__":
     print((" " * 8) + "With that out of the way...")
     print("")
 
-    values_to_plot_2_1_a = g_minimized_by_dimensions(linspace_points, N=100,
-                                                     P=100)
+    values_to_plot_2_1_a = g_minimized_by_dimensions(linspace_points, N=100, P=100)
 
     plt.title("2.1.(a) - min g(w) by dimension (rotationally-invariant sampling)")
     plt.xlabel("N (dimensions)")
     plt.ylabel("min {g(w)}")
-    plt.plot(list(range(1, 100+1)), values_to_plot_2_1_a, '.')
+    plt.plot(list(range(1, 100 + 1)), values_to_plot_2_1_a, ".")
     plt.show(block=False)
-    plt.savefig(os.path.join(figs_dir,'2_1_a.png'))
+    plt.savefig(os.path.join(figs_dir, "2_1_a.png"))
     print("(Figure saved to figs/2_1_a.png)")
     plt.clf()
 
@@ -258,10 +256,9 @@ if __name__ == "__main__":
             plt.title("2.1.({}) - P = {}".format(subproblem, P))
             plt.xlabel("N (dimensions)")
             plt.ylabel("min {g(w)}")
-            plt.plot(list(range(1, 100+1)), vals, '.')
+            plt.plot(list(range(1, 100 + 1)), vals, ".")
             plt.show(block=False)
-            plt.savefig(os.path.join(figs_dir,
-                                     '2_1_{}_{}.png'.format(subproblem, P)))
+            plt.savefig(os.path.join(figs_dir, "2_1_{}_{}.png".format(subproblem, P)))
             print("(Figure saved to figs/2_1_{}_{}.png)".format(subproblem, P))
             print("\n")
             plt.clf()

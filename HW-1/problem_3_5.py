@@ -20,10 +20,12 @@ figs_dir = os.path.join(script_dir, "figs")
 
 
 def g(w):
-    return (1/50) * (w**4 + w**2 + 10*w)
+    return (1 / 50) * (w ** 4 + w ** 2 + 10 * w)
+
 
 def g_prime(w):
-    return (1/25) * (2*(w**3) + w + 5)
+    return (1 / 25) * (2 * (w ** 3) + w + 5)
+
 
 def descend(g, g_prime, alpha, max_iters, w):
     weights = [w]
@@ -45,11 +47,11 @@ def plot_descent(descent, save_loc=None, show=False, block=True):
     axs[0].set_title("Weight history")
     axs[0].set_xlabel("Iteration")
     axs[0].set_ylabel("w")
-    axs[0].plot(descent[0,:])
+    axs[0].plot(descent[0, :])
     axs[1].set_title("Cost history")
     axs[1].set_xlabel("Iteration")
     axs[1].set_ylabel("g(w)")
-    axs[1].plot(descent[1,:], 'tab:orange')
+    axs[1].plot(descent[1, :], "tab:orange")
 
     # Need this so that labels don't overlap.
     plt.tight_layout()
@@ -72,7 +74,7 @@ if __name__ == "__main__":
 
     w_0 = 2
     max_its = 1000
-    alphas = list(map(lambda s: 10**(-s), range(0, 3)))
+    alphas = list(map(lambda s: 10 ** (-s), range(0, 3)))
     print(alphas)
 
     c = 1

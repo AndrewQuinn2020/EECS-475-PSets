@@ -7,8 +7,8 @@
 
 # See problem-2-1.png for the problem statement.
 
-import math
 import itertools
+import math
 import os
 
 import numpy as np
@@ -35,7 +35,7 @@ def point_on_hypersphere(N=2, radius=1):
 
 def rosenbrock(w):
     assert len(w) == 2
-    return 100 * (w[1] - w[0])**2 + (w[0] - 1)**2
+    return 100 * (w[1] - w[0]) ** 2 + (w[0] - 1) ** 2
 
 
 def random_search_step_fixed(g, w_init, alpha=1, P=1000):
@@ -78,8 +78,9 @@ if __name__ == "__main__":
     global_minimum = rosenbrock(np.array([1, 1]))
 
     for i in range(1, 1000):
-        not_necessarily_global_minimum = rosenbrock(np.array([1, 1])
-                                                    + point_on_hypersphere())
+        not_necessarily_global_minimum = rosenbrock(
+            np.array([1, 1]) + point_on_hypersphere()
+        )
         assert global_minimum <= not_necessarily_global_minimum
         # Program will crash if the above statement ceases to be true.
 
@@ -106,12 +107,9 @@ if __name__ == "__main__":
     plt.title("2.4 - fixed \\alpha - cost history function")
     plt.xlabel("Step K")
     plt.ylabel("rosenbrock(w)")
-    plt.plot(list(range(1, 50+1)), contour_heights, '.')
+    plt.plot(list(range(1, 50 + 1)), contour_heights, ".")
     plt.show(block=False)
-    plt.savefig(os.path.join(figs_dir, '2_4_fixed.png'))
-
-
-
+    plt.savefig(os.path.join(figs_dir, "2_4_fixed.png"))
 
     K = 50
     w_0 = np.array([-2, -2])
@@ -124,9 +122,9 @@ if __name__ == "__main__":
     contour_heights[0] = rosenbrock(w_0)
 
     for i in range(1, K):
-        next_data = random_search_step_variable(rosenbrock, w_0,
-                                                alpha=lambda k: 1.0 / k,
-                                                current_step=i)
+        next_data = random_search_step_variable(
+            rosenbrock, w_0, alpha=lambda k: 1.0 / k, current_step=i
+        )
         contour_coordinates[i] = next_data[0]
         contour_heights[i] = next_data[1]
         assert contour_heights[i] == rosenbrock(next_data[0])
@@ -138,16 +136,15 @@ if __name__ == "__main__":
     plt.title("2.4 - fixed vs. diminishing \\alpha - cost history function")
     plt.xlabel("Step K")
     plt.ylabel("rosenbrock(w)")
-    plt.plot(list(range(1, 50+1)), contour_heights, '.')
+    plt.plot(list(range(1, 50 + 1)), contour_heights, ".")
     plt.show(block=False)
-    plt.savefig(os.path.join(figs_dir, '2_4_fixed_vs_diminishing.png'))
+    plt.savefig(os.path.join(figs_dir, "2_4_fixed_vs_diminishing.png"))
 
     plt.clf()
-
 
     plt.title("2.4 - diminishing \\alpha = 1/k - cost history function")
     plt.xlabel("Step K")
     plt.ylabel("rosenbrock(w)")
-    plt.plot(list(range(1, 50+1)), contour_heights, '.')
+    plt.plot(list(range(1, 50 + 1)), contour_heights, ".")
     plt.show(block=False)
-    plt.savefig(os.path.join(figs_dir, '2_4_diminishing.png'))
+    plt.savefig(os.path.join(figs_dir, "2_4_diminishing.png"))
