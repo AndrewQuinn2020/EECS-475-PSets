@@ -1,17 +1,18 @@
 #!/usr/bin/python3
 
+# problem_5_9_verify_data.py
+
 import logging
 import os
 import pickle
 import sys
 from random import randint
 
-import requests
 import autograd.numpy as np
 import colorlog
+import requests
 from autograd import grad, hessian
 from matplotlib import pyplot as plt
-
 
 logger = logging.getLogger(__name__)
 # Change this to get more, or fewer, error messages.
