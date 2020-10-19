@@ -181,14 +181,22 @@ if __name__ == "__main__":
         lambda w: least_squares(w, x, y), 10, 100 * np.random.rand(14)
     )
 
-    logger.info("Final weight :: {}".format(weights[-1]))
-    logger.info("Final cost   :: {}".format(costs[-1]))
+    logger.debug("Final weight :: {}".format(weights[-1]))
+    logger.debug("Final cost   :: {}".format(costs[-1]))
 
-    logger.info("MSE  :: {}".format(least_squares(weights[-1], x, y)))
-    logger.info("rMSE :: {}".format(np.sqrt(least_squares(weights[-1], x, y))))
-    logger.info("MAD  :: {}".format(least_abs_devs(weights[-1], x, y)))
+    logger.info("MSE  :: {:.4f}".format(least_squares(weights[-1], x, y)))
+    logger.info(
+        "rMSE :: {:.4f}\t(should be close to 4.5)".format(
+            np.sqrt(least_squares(weights[-1], x, y))
+        )
+    )
+    logger.info(
+        "MAD  :: {:.4f}\t(should be close to 3.0)".format(
+            least_abs_devs(weights[-1], x, y)
+        )
+    )
 
-    logger.info("Loading in Boston housing dataset.")
+    logger.info("Loading in auto housing dataset.")
     data = np.loadtxt(auto_dataset_path, delimiter=",")
     x = np.nan_to_num(data[:-1, :])
     y = data[-1:, :]
@@ -204,9 +212,17 @@ if __name__ == "__main__":
         lambda w: least_squares(w, x, y), 10, 100 * np.random.rand(8)
     )
 
-    logger.info("Final weight :: {}".format(weights[-1]))
-    logger.info("Final cost   :: {}".format(costs[-1]))
+    logger.debug("Final weight :: {}".format(weights[-1]))
+    logger.debug("Final cost   :: {}".format(costs[-1]))
 
-    logger.info("MSE  :: {}".format(least_squares(weights[-1], x, y)))
-    logger.info("rMSE :: {}".format(np.sqrt(least_squares(weights[-1], x, y))))
-    logger.info("MAD  :: {}".format(least_abs_devs(weights[-1], x, y)))
+    logger.info("MSE  :: {:.4f}".format(least_squares(weights[-1], x, y)))
+    logger.info(
+        "rMSE :: {:.4f}\t(should be close to 3.3)".format(
+            np.sqrt(least_squares(weights[-1], x, y))
+        )
+    )
+    logger.info(
+        "MAD  :: {:.4f}\t(should be close to 2.5)".format(
+            least_abs_devs(weights[-1], x, y)
+        )
+    )
