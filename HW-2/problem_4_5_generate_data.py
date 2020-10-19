@@ -92,6 +92,25 @@ def g(w):
     return np.log(1.0 + np.exp(w[0] ** 2 + w[1] ** 2))
 
 
+def pickle_costs_and_weights(costs, weights, pname):
+    cost_loc = os.path.join(pickle_dir, "{}_cost_history.pickle".format(pname))
+    weight_loc = os.path.join(pickle_dir, "{}_weight_history.pickle".format(pname))
+
+    with open(cost_loc, "wb") as fp:
+        pickle.dump(cost_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("cost_history pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+
+    with open(weight_loc, "wb") as fp:
+        pickle.dump(weight_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("weight_history pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+
+    return None
+
+
 if __name__ == "__main__":
     logger.info("EECS 475 - Andrew Quinn - Problem 4.5.(c) and (d) - data gen")
     logger.info("-" * (88 - 11))
@@ -109,17 +128,7 @@ if __name__ == "__main__":
     logger.debug(cost_history)
     logger.debug(weight_history)
 
-    with open(os.path.join(pickle_dir, "4_5_c_cost_history.pickle"), "wb") as fp:
-        pickle.dump(cost_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
-        logger.info("cost_history for 4.5.(c) pickled to {}".format(fp.name))
-        logger.info("Load it back in with")
-        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
-
-    with open(os.path.join(pickle_dir, "4_5_c_weight_history.pickle"), "wb") as fp:
-        pickle.dump(weight_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
-        logger.info("weight_history for 4.5.(c) pickled to {}".format(fp.name))
-        logger.info("Load it back in with")
-        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+    pickle_costs_and_weights(cost_history, weight_history, "4_5_c")
 
     # Code to generate 4.5.(d) data.
     start = np.array([4, 4]).astype(np.float32)
@@ -130,14 +139,4 @@ if __name__ == "__main__":
     logger.debug(cost_history)
     logger.debug(weight_history)
 
-    with open(os.path.join(pickle_dir, "4_5_d_cost_history.pickle"), "wb") as fp:
-        pickle.dump(cost_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
-        logger.info("cost_history for 4.5.(d) pickled to {}".format(fp.name))
-        logger.info("Load it back in with")
-        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
-
-    with open(os.path.join(pickle_dir, "4_5_d_weight_history.pickle"), "wb") as fp:
-        pickle.dump(weight_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
-        logger.info("weight_history for 4.5.(d) pickled to {}".format(fp.name))
-        logger.info("Load it back in with")
-        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+    pickle_costs_and_weights(cost_history, weight_history, "4_5_d")
