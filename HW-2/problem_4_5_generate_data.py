@@ -2,11 +2,11 @@
 
 import logging
 import os
-import sys
 import pickle
+import sys
 
-import colorlog
 import autograd.numpy as np
+import colorlog
 from autograd import grad, hessian
 
 logger = logging.getLogger()
@@ -91,7 +91,7 @@ def g(w):
 
 
 if __name__ == "__main__":
-    logger.info("EECS 475 - Andrew Quinn - Problem 4.5.(c) and (d)")
+    logger.info("EECS 475 - Andrew Quinn - Problem 4.5.(c) and (d) - data gen")
     logger.info("-" * (88 - 11))
     logger.debug(np.array([[1, 1, 1]]))
 
