@@ -165,6 +165,7 @@ if __name__ == "__main__":
         with open(auto_dataset_path, "wb") as f:
             f.write(requests.get(auto_data_url, allow_redirects=True).content)
 
+    logger.info("Loading in Boston housing dataset.")
     data = np.loadtxt(boston_dataset_path, delimiter=",")
     x = data[:-1, :]
     y = data[-1:, :]
@@ -185,5 +186,27 @@ if __name__ == "__main__":
 
     logger.info("MSE  :: {}".format(least_squares(weights[-1], x, y)))
     logger.info("rMSE :: {}".format(np.sqrt(least_squares(weights[-1], x, y))))
+    logger.info("MAD  :: {}".format(least_abs_devs(weights[-1], x, y)))
 
+    logger.info("Loading in Boston housing dataset.")
+    data = np.loadtxt(auto_dataset_path, delimiter=",")
+    x = np.nan_to_num(data[:-1, :])
+    y = data[-1:, :]
+
+    # Standard normalization.
+    logger.debug("Normalizing x...")
+    x = (x - np.mean(x)) / np.std(x)
+
+    logger.debug("Shape of input  (should be (7, 398) :: {}".format(np.shape(x)))
+    logger.debug("Shape of output (should be (1, 398)  :: {}".format(np.shape(y)))
+
+    (weights, costs) = newtons_method(
+        lambda w: least_squares(w, x, y), 10, 100 * np.random.rand(8)
+    )
+
+    logger.info("Final weight :: {}".format(weights[-1]))
+    logger.info("Final cost   :: {}".format(costs[-1]))
+
+    logger.info("MSE  :: {}".format(least_squares(weights[-1], x, y)))
+    logger.info("rMSE :: {}".format(np.sqrt(least_squares(weights[-1], x, y))))
     logger.info("MAD  :: {}".format(least_abs_devs(weights[-1], x, y)))
