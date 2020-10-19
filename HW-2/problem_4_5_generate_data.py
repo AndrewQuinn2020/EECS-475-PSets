@@ -3,13 +3,19 @@
 import logging
 import os
 import sys
-import json
+import pickle
 
 import colorlog
 import autograd.numpy as np
 from autograd import grad, hessian
 
 logger = logging.getLogger()
+# Change this to get more, or fewer, error messages.
+#   DEBUG = Show me everything.
+#   INFO = Only the green text and up.
+#   WARNING = Only warnings.
+#   ERROR = Only (user coded) error messages.
+#   CRITICAL = Only (user coded) critical error messages.
 logger.setLevel(colorlog.colorlog.logging.DEBUG)
 
 handler = colorlog.StreamHandler()
@@ -20,7 +26,12 @@ np.set_printoptions(threshold=sys.maxsize)
 np.set_printoptions(linewidth=10000)
 
 script_dir = os.path.dirname(__file__)
-figs = os.path.join(script_dir, "figs")
+figs_dir = os.path.join(script_dir, "figs")
+pickle_dir = os.path.join(script_dir, "pickles")
+
+for dir in [script_dir, figs_dir, pickle_dir]:
+    if not os.path.exists(dir):
+        os.makedirs(dir)
 
 
 def newtons_method(g, max_its, w, epsilon=(10 ** (-7))):
@@ -87,14 +98,44 @@ if __name__ == "__main__":
     if not np.isclose(np.log(2), g(np.array([0, 0]))):
         logger.warning("Something seems wrong with g(w). g(0) != ln 2 ~= 0.69315.")
 
+    # Code to generate 4.5.(c) data.
     start = np.array([1, 1]).astype(np.float32)
     logger.debug("Start point: {}, with g({}) = {}".format(start, start, g(start)))
 
-    logger.debug(start, start.dtype)
-    logger.debug(g(start))
     cost_history, weight_history = newtons_method(g, 10, start)
 
     logger.debug(cost_history)
     logger.debug(weight_history)
 
-    logger.debug(json.dumps(cost_history))
+    with open(os.path.join(pickle_dir, "4_5_c_cost_history.pickle"), "wb") as fp:
+        pickle.dump(cost_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("cost_history for 4.5.(c) pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+
+    with open(os.path.join(pickle_dir, "4_5_c_weight_history.pickle"), "wb") as fp:
+        pickle.dump(weight_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("weight_history for 4.5.(c) pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+
+    # Code to generate 4.5.(d) data.
+    start = np.array([4, 4]).astype(np.float32)
+    logger.debug("Start point: {}, with g({}) = {}".format(start, start, g(start)))
+
+    cost_history, weight_history = newtons_method(g, 10, start)
+
+    logger.debug(cost_history)
+    logger.debug(weight_history)
+
+    with open(os.path.join(pickle_dir, "4_5_d_cost_history.pickle"), "wb") as fp:
+        pickle.dump(cost_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("cost_history for 4.5.(d) pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+
+    with open(os.path.join(pickle_dir, "4_5_d_weight_history.pickle"), "wb") as fp:
+        pickle.dump(weight_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("weight_history for 4.5.(d) pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
