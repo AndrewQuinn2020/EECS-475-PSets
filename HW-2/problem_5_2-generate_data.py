@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 #   WARNING = Only warnings.
 #   ERROR = Only (user coded) error messages.
 #   CRITICAL = Only (user coded) critical error messages.
-logger.setLevel(colorlog.colorlog.logging.INFO)
+logger.setLevel(colorlog.colorlog.logging.DEBUG)
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter())
@@ -142,5 +142,16 @@ if __name__ == "__main__":
             f.write(requests.get(kleiber_data_url, allow_redirects=True).content)
 
     data = np.loadtxt(kleiber_dataset_path, delimiter=",")
-    x = data[:-1, :]
-    y = data[-1:, :]
+    x = np.log(data[:-1, :])
+    y = np.log(data[-1:, :])
+
+    # Look over to make sure this looks roughly linear.
+    # plt.scatter(x, y)
+    # plt.title("Does this look roughly linear to you?")
+    # plt.show()
+    # plt.close()
+
+    def our_least_squares(w):
+        return least_squares(w, x, y)
+
+    newtons_method(our_least_squares, 10, np.array([0, 0]).astype(np.float32))
