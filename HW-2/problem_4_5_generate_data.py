@@ -8,8 +8,9 @@ import sys
 import autograd.numpy as np
 import colorlog
 from autograd import grad, hessian
+from matplotlib import pyplot as plt
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 # Change this to get more, or fewer, error messages.
 #   DEBUG = Show me everything.
 #   INFO = Only the green text and up.
