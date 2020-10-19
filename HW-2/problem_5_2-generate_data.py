@@ -154,4 +154,26 @@ if __name__ == "__main__":
     def our_least_squares(w):
         return least_squares(w, x, y)
 
-    newtons_method(our_least_squares, 10, np.array([0, 0]).astype(np.float32))
+    (weights, costs) = newtons_method(
+        our_least_squares, 10, np.array([0, 0]).astype(np.float32)
+    )
+
+    logger.info("Least squares complete!")
+    m, b = np.polyfit(x[0, :], y[0, :], 1)
+    logger.debug("Polyfit numpy :: y = {:.4f} + {:.4f} x".format(b, m))
+    logger.info(
+        "Final weights  :: y = {:.4f} + {:.4f} x".format(weights[-1][0], weights[-1][1])
+    )
+    logger.debug("If polyfit doesn't match our model, something went wrong.")
+    logger.info("Final costs   :: {:.4f}".format(costs[-1]))
+
+    y_fit = [weights[-1][1] * xi + weights[-1][0] for xi in x]
+
+    plt.scatter(x, y)
+    plt.scatter(x, y_fit, linewidth=2)
+    plt.title("$\ln{y_p}$ vs $\ln{x_p}$")
+    plt.ylabel("$\ln{y_p}$")
+    plt.xlabel("$\ln{x_p}$")
+    plt.show(block=False)
+
+    pickle_costs_and_weights(costs, weights, "5_2")
