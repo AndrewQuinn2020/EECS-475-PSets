@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 #   WARNING = Only warnings.
 #   ERROR = Only (user coded) error messages.
 #   CRITICAL = Only (user coded) critical error messages.
-logger.setLevel(colorlog.colorlog.logging.DEBUG)
+logger.setLevel(colorlog.colorlog.logging.INFO)
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter())
@@ -144,56 +144,3 @@ if __name__ == "__main__":
     data = np.loadtxt(kleiber_dataset_path, delimiter=",")
     x = data[:-1, :]
     y = data[-1:, :]
-
-    logger.debug("This should print (1, 1498): {}".format(np.shape(x)))
-    logger.debug("This should print (1, 1498): {}".format(np.shape(y)))
-
-    logger.debug("Our x data looks like: {}".format(x))
-    logger.debug("Our y data looks like: {}".format(y))
-
-    logger.info("Kleiber's law data loaded in. Fitting linear model...")
-
-    ls = lambda w: least_squares(w, x, y)
-
-    logger.debug(ls(np.array([0, 0])))
-    logger.debug(ls(np.array([0, 1])))
-
-    # We only need one jump with Newton's method to land at the global minimum.
-    (weights, costs) = newtons_method(ls, 1, np.array([0, 0]).astype(np.float32))
-
-    logger.info("Model complete!")
-    logger.info("Final weights :: {}".format(weights[-1]))
-    logger.info("Final costs   :: {}".format(costs[-1]))
-
-    final_weight = weights[-1]
-
-    logger.info(
-        "Our final model is: y = {:.4f} + {:.4f} x".format(
-            final_weight[0], final_weight[1]
-        )
-    )
-
-    logger.debug("Does that look right?")
-    logger.debug("Let's spot check a few random points...")
-
-    spot_check = (
-        "\t\tChecking x[{0:<5}], y[{1:<5}]."
-        "\t\ty_pred = {2:<8.2f} + {3:<8.2f} * {4:<8.2f} = {5:<8.2f}"
-        "\t\ty_true = {6:<8.2f}"
-    )
-
-    for throwaway in range(0, 10):
-        t = randint(1, 1498)
-        logger.debug(
-            spot_check.format(
-                t,
-                t,
-                final_weight[0],
-                x[0, t],
-                final_weight[1],
-                final_weight[0] + (x[0, t] * final_weight[1]),
-                y[0, t],
-            )
-        )
-
-    pickle_costs_and_weights(costs, weights, "5_2")
