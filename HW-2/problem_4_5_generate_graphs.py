@@ -63,10 +63,11 @@ if __name__ == "__main__":
         cost_history = pickle.load(fp)
         logger.debug("cost_history = {}".format(cost_history))
 
+    save_location = os.path.join(figs_dir, "4_5_c_cfh.png")
+    logger.info("Saving this plot to \t{}".format(save_location))
     fig, ax = get_cfh(cost_history, title_id="4.5.(c)")
-    plt.show()
-
-    plt.savefig(os.path.join(figs_dir, "4_5_c_cfh.png"))
+    plt.draw()
+    plt.savefig(save_location)
     plt.close()
 
     # Generate graphs for 4.5.(c)
@@ -75,8 +76,9 @@ if __name__ == "__main__":
         cost_history = pickle.load(fp)
         logger.debug("cost_history = {}".format(cost_history))
 
+    save_location = os.path.join(figs_dir, "4_5_d_cfh.png")
+    logger.info("Saving this plot to \t{}".format(save_location))
     fig, ax = get_cfh(cost_history, title_id="4.5.(d)")
-    plt.show()
-
-    plt.savefig(os.path.join(figs_dir, "4_5_d_cfh.png"))
+    plt.draw()
+    plt.savefig(save_location)
     plt.close()

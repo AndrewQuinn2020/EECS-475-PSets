@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 #   WARNING = Only warnings.
 #   ERROR = Only (user coded) error messages.
 #   CRITICAL = Only (user coded) critical error messages.
-logger.setLevel(colorlog.colorlog.logging.INFO)
+logger.setLevel(colorlog.colorlog.logging.DEBUG)
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter())
@@ -29,6 +29,7 @@ np.set_printoptions(linewidth=10000)
 script_dir = os.path.dirname(__file__)
 figs_dir = os.path.join(script_dir, "figs")
 pickle_dir = os.path.join(script_dir, "pickles")
+
 
 for dir in [script_dir, figs_dir, pickle_dir]:
     if not os.path.exists(dir):
