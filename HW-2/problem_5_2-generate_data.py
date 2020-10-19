@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 #   WARNING = Only warnings.
 #   ERROR = Only (user coded) error messages.
 #   CRITICAL = Only (user coded) critical error messages.
-logger.setLevel(colorlog.colorlog.logging.DEBUG)
+logger.setLevel(colorlog.colorlog.logging.INFO)
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter())
