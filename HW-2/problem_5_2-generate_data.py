@@ -171,9 +171,11 @@ if __name__ == "__main__":
 
     plt.scatter(x, y)
     plt.scatter(x, y_fit, linewidth=2)
-    plt.title("$\ln{y_p}$ vs $\ln{x_p}$")
+    plt.title("Problem 5.2 - Visual check: $\ln{y_p}$ vs $\ln{x_p}$")
     plt.ylabel("$\ln{y_p}$")
     plt.xlabel("$\ln{x_p}$")
-    plt.show(block=False)
+    plt.draw()
+    plt.savefig(os.path.join(figs_dir, "problem_5_2_scatter.png"))
+    plt.close()
 
     pickle_costs_and_weights(costs, weights, "5_2")
