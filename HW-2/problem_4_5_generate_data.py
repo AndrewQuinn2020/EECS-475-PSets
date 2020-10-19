@@ -97,13 +97,13 @@ def pickle_costs_and_weights(costs, weights, pname):
     weight_loc = os.path.join(pickle_dir, "{}_weight_history.pickle".format(pname))
 
     with open(cost_loc, "wb") as fp:
-        pickle.dump(cost_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(costs, fp, protocol=pickle.HIGHEST_PROTOCOL)
         logger.info("cost_history pickled to {}".format(fp.name))
         logger.info("Load it back in with")
         logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
 
     with open(weight_loc, "wb") as fp:
-        pickle.dump(weight_history, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(weights, fp, protocol=pickle.HIGHEST_PROTOCOL)
         logger.info("weight_history pickled to {}".format(fp.name))
         logger.info("Load it back in with")
         logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
