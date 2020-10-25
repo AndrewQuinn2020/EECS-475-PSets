@@ -256,6 +256,7 @@ if __name__ == "__main__":
     logger.info("{} misses under Newton's Method/Softmax.".format(misclassifications))
 
     logger.debug("Running gradient descent on our Softmax...")
+
     (weights, costs) = gradient_descent(
         our_softmax, 0.01, 10000, np.zeros(9).astype(np.float32)
     )
