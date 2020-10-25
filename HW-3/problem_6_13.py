@@ -62,6 +62,27 @@ def softmax(w, x, y):
     return cost / float(np.size(y))
 
 
+# gradient descent function - inputs: g (input function), alpha (steplength parameter), max_its (maximum number of iterations), w (initialization)
+def gradient_descent(g, alpha, max_its, w):
+    # compute gradient module using autograd
+    gradient = grad(g)
+
+    # run the gradient descent loop
+    weight_history = [w]  # container for weight history
+    cost_history = [g(w)]  # container for corresponding cost function history
+    for k in range(max_its):
+        # evaluate the gradient, store current weights and cost function value
+        grad_eval = gradient(w)
+
+        # take gradient descent step
+        w = w - alpha * grad_eval
+
+        # record weight and cost
+        weight_history.append(w)
+        cost_history.append(g(w))
+    return weight_history, cost_history
+
+
 def newtons_method(g, max_its, w, epsilon=(10 ** (-7)), verbose=False):
     if not verbose:
         logger.disabled = True
@@ -143,7 +164,7 @@ def spot_check_trained_model(x, y, w, n, verbose=True):
     if not verbose:
         logger.disabled = True
 
-    classification = model(x[:, n], weights[-1])
+    classification = model(x[:, n], w)
     logger.debug("model(x[:, {}], weights) returns {:>40}.".format(n, classification))
     logger.debug("The true classification was {:>40}".format(str(y[:, n][0])))
     if not verbose:
@@ -154,7 +175,7 @@ def spot_check_trained_model(x, y, w, n, verbose=True):
 
 def check_classify(x, y, w, n):
     """Returns True if the model classified the n'th input data correctly."""
-    return np.sign(classification) == np.sign(y[:, n][0])
+    return np.sign(model(x[:, n], w)) == np.sign(y[:, n][0])
 
 
 if __name__ == "__main__":
@@ -225,3 +246,46 @@ if __name__ == "__main__":
         spots -= 1
 
     logger.info("Counting misclassifications in Softmax model...")
+
+    misclassifications = 0
+    for i in range(0, x.shape[1]):
+        if not check_classify(x, y, weights[-1], i):
+            logger.debug("Input {} was misclassified.".format(i))
+            misclassifications += 1
+
+    logger.info("{} misses under Newton's Method/Softmax.".format(misclassifications))
+
+    logger.debug("Running gradient descent on our Softmax...")
+    (weights, costs) = gradient_descent(
+        our_softmax, 0.01, 10000, np.zeros(9).astype(np.float32)
+    )
+
+    pickle_costs_and_weights(costs, weights, "6_13_softmax", verbose=True)
+
+    logger.info("Softmax completed!")
+    logger.debug("Final weights are {}".format(weights[-1]))
+    logger.debug("Let's try running our model on this.")
+    logger.debug("Our first set of data is {}".format(x[:, 0]))
+    logger.debug("Let's try model({}, {})".format(x[:, 0], weights[-1]))
+    logger.debug("\t{}".format(model(x[:, 0], weights[-1])))
+    logger.debug("Softmax is trained on y_p \in {-1, +1}, so anything positive")
+    logger.debug("should have a y_p of 1 associated with it, and anything negative")
+    logger.debug("should have a y_p of -1 asosciated with it.")
+    logger.debug("Our first y_p is {}".format(y[:, 0]))
+
+    spots = 100
+    while spots > 0:
+        logger.debug(
+            spot_check_trained_model(x, y, weights[-1], randint(0, x.shape[1] - 1))
+        )
+        spots -= 1
+
+    logger.info("Counting misclassifications in Softmax model...")
+
+    misclassifications = 0
+    for i in range(0, x.shape[1]):
+        if not check_classify(x, y, weights[-1], i):
+            logger.debug("Input {} was misclassified.".format(i))
+            misclassifications += 1
+
+    logger.info("{} misses under gradient descent/Softmax.".format(misclassifications))
