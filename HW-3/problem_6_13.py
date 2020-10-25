@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 #   WARNING = Only warnings.
 #   ERROR = Only (user coded) error messages.
 #   CRITICAL = Only (user coded) critical error messages.
-logger.setLevel(colorlog.colorlog.logging.DEBUG)
+logger.setLevel(colorlog.colorlog.logging.INFO)
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter())
@@ -59,6 +59,11 @@ def model(x, w):
 # the convex softmax cost function
 def softmax(w, x, y):
     cost = np.sum(np.log(1 + np.exp(-y * model(x, w))))
+    return cost / float(np.size(y))
+
+
+def perceptron(w, x, y):
+    cost = np.sum(np.maximum(0, -y * model(x, w)))
     return cost / float(np.size(y))
 
 
@@ -222,12 +227,14 @@ if __name__ == "__main__":
 
     logger.debug("Running Newton's method on our Softmax...")
     (weights, costs) = newtons_method(
-        our_softmax, 10, np.zeros(9).astype(np.float32), verbose=True
+        our_softmax, 100, np.zeros(9).astype(np.float32), verbose=False
     )
 
-    pickle_costs_and_weights(costs, weights, "6_13_softmax", verbose=True)
+    pickle_costs_and_weights(
+        costs, weights, "6_13_softmax_newtons_method", verbose=False
+    )
 
-    logger.info("Softmax completed!")
+    logger.info("Softmax (Newton's method) completed!")
 
     spots = 100
     while spots > 0:
@@ -244,7 +251,9 @@ if __name__ == "__main__":
             logger.debug("Input {} was misclassified.".format(i))
             misclassifications += 1
 
-    logger.info("{} misses under Newton's Method/Softmax.".format(misclassifications))
+    logger.warning(
+        "{} misses under Newton's Method/Softmax.".format(misclassifications)
+    )
 
     logger.debug("Running gradient descent on our Softmax...")
 
@@ -252,9 +261,11 @@ if __name__ == "__main__":
         our_softmax, 0.01, 10000, np.zeros(9).astype(np.float32)
     )
 
-    pickle_costs_and_weights(costs, weights, "6_13_softmax", verbose=True)
+    pickle_costs_and_weights(
+        costs, weights, "6_13_softmax_gradient_descent", verbose=False
+    )
 
-    logger.info("Softmax completed!")
+    logger.info("Softmax (gradient descent) completed!")
 
     spots = 100
     while spots > 0:
@@ -271,4 +282,70 @@ if __name__ == "__main__":
             logger.debug("Input {} was misclassified.".format(i))
             misclassifications += 1
 
-    logger.info("{} misses under gradient descent/Softmax.".format(misclassifications))
+    logger.warning(
+        "{} misses under gradient descent/Softmax.".format(misclassifications)
+    )
+
+    logger.info("Moving on to Perceptron cost function (see equation 6.33)")
+
+    def our_perceptron(w):
+        return perceptron(w, x, y)
+
+    logger.debug("Running Newton's method on our Perceptron...")
+    (weights, costs) = newtons_method(
+        our_perceptron, 1000, np.zeros(9).astype(np.float32), verbose=False
+    )
+
+    pickle_costs_and_weights(
+        costs, weights, "6_13_perceptron_newtons_method", verbose=False
+    )
+
+    logger.info("Perceptron completed!")
+
+    spots = 100
+    while spots > 0:
+        logger.debug(
+            spot_check_trained_model(x, y, weights[-1], randint(0, x.shape[1] - 1))
+        )
+        spots -= 1
+
+    logger.info("Counting misclassifications in Softmax model...")
+
+    misclassifications = 0
+    for i in range(0, x.shape[1]):
+        if not check_classify(x, y, weights[-1], i):
+            logger.debug("Input {} was misclassified.".format(i))
+            misclassifications += 1
+
+    logger.warning(
+        "{} misses under Newton's Method/Perceptron.".format(misclassifications)
+    )
+
+    logger.debug("Running gradient descent on our Perceptron...")
+
+    (weights, costs) = gradient_descent(
+        our_perceptron, 0.01, 50000, np.zeros(9).astype(np.float32)
+    )
+
+    pickle_costs_and_weights(costs, weights, "6_13_softmax", verbose=False)
+
+    logger.info("Softmax completed!")
+
+    spots = 100
+    while spots > 0:
+        logger.debug(
+            spot_check_trained_model(x, y, weights[-1], randint(0, x.shape[1] - 1))
+        )
+        spots -= 1
+
+    logger.info("Counting misclassifications in Perceptron model...")
+
+    misclassifications = 0
+    for i in range(0, x.shape[1]):
+        if not check_classify(x, y, weights[-1], i):
+            logger.debug("Input {} was misclassified.".format(i))
+            misclassifications += 1
+
+    logger.warning(
+        "{} misses under gradient descent/Perceptron.".format(misclassifications)
+    )
