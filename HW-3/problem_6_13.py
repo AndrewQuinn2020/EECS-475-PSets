@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 #   WARNING = Only warnings.
 #   ERROR = Only (user coded) error messages.
 #   CRITICAL = Only (user coded) critical error messages.
-logger.setLevel(colorlog.colorlog.logging.INFO)
+logger.setLevel(colorlog.colorlog.logging.DEBUG)
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter())
@@ -42,13 +42,120 @@ breast_cancer_data_url = "".join(
     ]
 )
 
-
 script_dir = os.path.dirname(__file__)
 figs_dir = os.path.join(script_dir, "figs")
 pickle_dir = os.path.join(script_dir, "pickles")
 datasets_dir = os.path.join(script_dir, "datasets")
 
 breast_cancer_dataset_path = os.path.join(datasets_dir, "breast_cancer_data.csv")
+
+
+# compute linear combination of input point
+def model(x, w):
+    a = w[0] + np.dot(x.T, w[1:])
+    return a.T
+
+
+# the convex softmax cost function
+def softmax(w, x, y):
+    cost = np.sum(np.log(1 + np.exp(-y * model(x, w))))
+    return cost / float(np.size(y))
+
+
+def newtons_method(g, max_its, w, epsilon=(10 ** (-7)), verbose=False):
+    if not verbose:
+        logger.disabled = True
+    """The Newton's Method code from _Machine Learning Refined_."""
+
+    # Compute gradiant and Hessian using autograd.
+    logger.debug("Constructing gradient and Hessian.")
+    gradient = grad(g)
+    logger.debug("Gradient constructed.")
+    hess = hessian(g)
+    logger.debug("Hessian constructed.")
+
+    # Run Newton's method loop.
+    logger.debug("Our first weight is {}.".format(w))
+    weight_history = [w]
+    logger.debug("Our first cost is {}.".format(g(w)))
+    cost_history = [g(w)]
+
+    for k in range(0, max_its):
+        logger.debug("Iteration {} ::".format(k))
+
+        grad_eval = gradient(w)
+        hess_eval = hess(w)
+
+        logger.debug("\tgradient @ {} = {}".format(w, grad_eval))
+
+        # Reshape Hessian to be square matrix.
+        hess_eval.shape = (
+            int((np.size(hess_eval)) ** (0.5)),
+            int((np.size(hess_eval)) ** (0.5)),
+        )
+
+        logger.debug("\tHessian @ {} = \n{}".format(w, hess_eval))
+
+        # Solve second-order system for weight update.
+        A = hess_eval + epsilon * np.eye(w.size)
+        b = grad_eval
+        w = np.linalg.solve(A, np.dot(A, w) - b)
+
+        logger.debug("\tNew w @ {},".format(w))
+        logger.debug("\twith cost g(w) = {}.".format(g(w)))
+
+        # Record weight and cost.
+        weight_history.append(w)
+        cost_history.append(g(w))
+
+    if not verbose:
+        logger.disabled = False
+
+    return (weight_history, cost_history)
+
+
+def pickle_costs_and_weights(costs, weights, pname, verbose=False):
+    if not verbose:
+        logger.disabled = True
+    cost_loc = os.path.join(pickle_dir, "{}_cost_history.pickle".format(pname))
+    weight_loc = os.path.join(pickle_dir, "{}_weight_history.pickle".format(pname))
+
+    with open(cost_loc, "wb") as fp:
+        pickle.dump(costs, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("cost_history pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+
+    with open(weight_loc, "wb") as fp:
+        pickle.dump(weights, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("weight_history pickled to {}".format(fp.name))
+        logger.info("Load it back in with")
+        logger.info('\t `cost_history = pickle.load(open("{}", "rb"))`'.format(fp.name))
+
+    if not verbose:
+        logger.disabled = False
+
+    return None
+
+
+def spot_check_trained_model(x, y, w, n, verbose=True):
+    """Debug version of check_classify. Prints helpful statements if verbose=True."""
+    if not verbose:
+        logger.disabled = True
+
+    classification = model(x[:, n], weights[-1])
+    logger.debug("model(x[:, {}], weights) returns {:>40}.".format(n, classification))
+    logger.debug("The true classification was {:>40}".format(str(y[:, n][0])))
+    if not verbose:
+        logger.disabled = False
+
+    return np.sign(classification) == np.sign(y[:, n][0])
+
+
+def check_classify(x, y, w, n):
+    """Returns True if the model classified the n'th input data correctly."""
+    return np.sign(classification) == np.sign(y[:, n][0])
+
 
 if __name__ == "__main__":
     logger.info("EECS 475 - Andrew Quinn - Problem 6.13 - Softmax vs Perceptron")
@@ -67,3 +174,54 @@ if __name__ == "__main__":
         logger.warning("Breast cancer dataset is missing... Downloading.")
         with open(breast_cancer_dataset_path, "wb") as f:
             f.write(requests.get(breast_cancer_data_url, allow_redirects=True).content)
+
+    # Load in data.
+    data = np.loadtxt(breast_cancer_dataset_path, delimiter=",")
+
+    # get input and output of dataset
+    x = data[:-1, :]
+    y = data[-1:, :]
+
+    logger.debug("Shape of inputs (should be (8, 699):  {}".format(np.shape(x)))
+    logger.debug("Shape of ourputs (should be (1, 699): {}".format(np.shape(y)))
+
+    if np.shape(x) != (8, 699):
+        logger.warning("The data for breast_cancer.csv isn't the expected shape.")
+    if np.shape(y) != (1, 699):
+        logger.warning("The data for breast_cancer.csv isn't the expected shape.")
+
+    logger.info("Since Softmax is provably everywhere convex, we can use")
+    logger.info("Newton's method to get the definition *really* fast so long")
+    logger.info("as our dataset is of a low-enough dimensionality.")
+
+    logger.debug("Loading Softmax with our input/output pairs...")
+
+    def our_softmax(w):
+        return softmax(w, x, y)
+
+    logger.debug("Running Newton's method on our Softmax...")
+    (weights, costs) = newtons_method(
+        our_softmax, 10, np.zeros(9).astype(np.float32), verbose=True
+    )
+
+    pickle_costs_and_weights(costs, weights, "6_13_softmax", verbose=True)
+
+    logger.info("Softmax completed!")
+    logger.debug("Final weights are {}".format(weights[-1]))
+    logger.debug("Let's try running our model on this.")
+    logger.debug("Our first set of data is {}".format(x[:, 0]))
+    logger.debug("Let's try model({}, {})".format(x[:, 0], weights[-1]))
+    logger.debug("\t{}".format(model(x[:, 0], weights[-1])))
+    logger.debug("Softmax is trained on y_p \in {-1, +1}, so anything positive")
+    logger.debug("should have a y_p of 1 associated with it, and anything negative")
+    logger.debug("should have a y_p of -1 asosciated with it.")
+    logger.debug("Our first y_p is {}".format(y[:, 0]))
+
+    spots = 100
+    while spots > 0:
+        logger.debug(
+            spot_check_trained_model(x, y, weights[-1], randint(0, x.shape[1] - 1))
+        )
+        spots -= 1
+
+    logger.info("Counting misclassifications in Softmax model...")
