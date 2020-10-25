@@ -258,7 +258,7 @@ if __name__ == "__main__":
     logger.debug("Running gradient descent on our Softmax...")
 
     (weights, costs) = gradient_descent(
-        our_softmax, 0.01, 10000, np.zeros(9).astype(np.float32)
+        our_softmax, 0.001, 100000, np.zeros(9).astype(np.float32)
     )
 
     pickle_costs_and_weights(
