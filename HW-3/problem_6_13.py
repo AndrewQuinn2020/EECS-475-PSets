@@ -228,15 +228,6 @@ if __name__ == "__main__":
     pickle_costs_and_weights(costs, weights, "6_13_softmax", verbose=True)
 
     logger.info("Softmax completed!")
-    logger.debug("Final weights are {}".format(weights[-1]))
-    logger.debug("Let's try running our model on this.")
-    logger.debug("Our first set of data is {}".format(x[:, 0]))
-    logger.debug("Let's try model({}, {})".format(x[:, 0], weights[-1]))
-    logger.debug("\t{}".format(model(x[:, 0], weights[-1])))
-    logger.debug("Softmax is trained on y_p \in {-1, +1}, so anything positive")
-    logger.debug("should have a y_p of 1 associated with it, and anything negative")
-    logger.debug("should have a y_p of -1 asosciated with it.")
-    logger.debug("Our first y_p is {}".format(y[:, 0]))
 
     spots = 100
     while spots > 0:
@@ -264,15 +255,6 @@ if __name__ == "__main__":
     pickle_costs_and_weights(costs, weights, "6_13_softmax", verbose=True)
 
     logger.info("Softmax completed!")
-    logger.debug("Final weights are {}".format(weights[-1]))
-    logger.debug("Let's try running our model on this.")
-    logger.debug("Our first set of data is {}".format(x[:, 0]))
-    logger.debug("Let's try model({}, {})".format(x[:, 0], weights[-1]))
-    logger.debug("\t{}".format(model(x[:, 0], weights[-1])))
-    logger.debug("Softmax is trained on y_p \in {-1, +1}, so anything positive")
-    logger.debug("should have a y_p of 1 associated with it, and anything negative")
-    logger.debug("should have a y_p of -1 asosciated with it.")
-    logger.debug("Our first y_p is {}".format(y[:, 0]))
 
     spots = 100
     while spots > 0:
