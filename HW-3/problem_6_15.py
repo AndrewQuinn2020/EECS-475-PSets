@@ -323,17 +323,16 @@ if __name__ == "__main__":
         )
     )
     for alpha in [10 ** -2, 10 ** -3, 10 ** -4, 10 ** -5, 10 ** -6]:
-        logger.debug(
-            "Running GD (alpha = {}) on our Softmax...".format(alpha)
-        )
+        logger.debug("Running GD (alpha = {}) on our Softmax...".format(alpha))
         (weights, costs) = gradient_descent(
             our_softmax,
             alpha=alpha,
-            max_its=10000,
+            max_its=100000,
             w=np.random.rand(x.shape[0] + 1).astype(np.float32) - 0.5,
         )
         w = weights[-1]
 
         logger.info("Generating confusion matrix...")
-        confusion_matrix(x, y, w, verbose=True)
-        logger.info("GD (alpha = {})/Softmax complete!".format(alpha)
+        cm = confusion_matrix(x, y, w, verbose=False)
+        logger.info("\n{}".format(cm))
+        logger.info("GD (alpha = {})/Softmax complete!".format(alpha))
