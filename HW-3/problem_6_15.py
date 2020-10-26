@@ -302,7 +302,7 @@ if __name__ == "__main__":
     logger.info("Softmax/Newton's Method complete!")
 
     def our_perceptron(w):
-        return softmax(w, x, y)
+        return perceptron(w, x, y)
 
     logger.debug("Running Newton's method on our Perceptron...")
     (weights, costs) = newtons_method(
@@ -322,8 +322,10 @@ if __name__ == "__main__":
             np.random.rand(x.shape[0] + 1).astype(np.float32) - 0.5
         )
     )
-    for alpha in [10 ** -4, 10 ** -5, 10 ** -6]:
-        logger.debug("Running GD (alpha = {}) on our Softmax...".format(alpha))
+    for alpha in [10 ** -2, 10 ** -3, 10 ** -4, 10 ** -5, 10 ** -6]:
+        logger.debug(
+            "Running GD (alpha = {}) on our Softmax...".format(alpha)
+        )
         (weights, costs) = gradient_descent(
             our_softmax,
             alpha=alpha,
@@ -334,4 +336,4 @@ if __name__ == "__main__":
 
         logger.info("Generating confusion matrix...")
         confusion_matrix(x, y, w, verbose=True)
-        logger.info("GD (alpha = {})/Softmax complete!".format(alpha))
+        logger.info("GD (alpha = {})/Softmax complete!".format(alpha)
