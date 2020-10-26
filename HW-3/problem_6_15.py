@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 #   WARNING = Only warnings.
 #   ERROR = Only (user coded) error messages.
 #   CRITICAL = Only (user coded) critical error messages.
-logger.setLevel(colorlog.colorlog.logging.DEBUG)
+logger.setLevel(colorlog.colorlog.logging.INFO)
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter())
@@ -94,12 +94,17 @@ def gradient_descent(g, alpha, max_its, w):
     # run the gradient descent loop
     weight_history = [w]  # container for weight history
     cost_history = [g(w)]  # container for corresponding cost function history
+    logger.warning(g(w))
     for k in range(max_its):
+        logger.warning("Loop {}".format(k))
         # evaluate the gradient, store current weights and cost function value
+        logger.warning(gradient(w))
         grad_eval = gradient(w)
+        logger.warning(grad_eval)
 
         # take gradient descent step
         w = w - alpha * grad_eval
+        logger.warning(w)
 
         # record weight and cost
         weight_history.append(w)
@@ -224,7 +229,7 @@ def confusion_matrix(x, y, weights, verbose=False):
             )
         )
 
-    logger.debug("Final confusion_matrix: \n{}".format(confusion_matrix))
+    logger.info("Final confusion_matrix: \n{}".format(confusion_matrix))
 
     if not verbose:
         logger.disabled = False
@@ -262,7 +267,16 @@ if __name__ == "__main__":
     data = np.loadtxt(credit_dataset_path, delimiter=",")
 
     # get input and output of dataset
+
+    # Get x, but replace any nans with 0s and any infs with the largest floats we can.
     x = np.nan_to_num(data[:-1, :])
+    # This is called a "broadcast operation" if you want to look it up.
+    # Calculate the mean of each row of x, and subtract from the row elementwise.
+    x = x - x.mean(axis=1)[:, np.newaxis]
+    # (Now, each row should have a mean very close to 0.)
+    # Calculate the standard deviation of each row of x, and divide the row elementwise.
+    x = x / x.std(axis=1)[:, np.newaxis]
+    # (Now, x has been standard-normalized, and you should be good to go.)
     y = data[-1:, :]
 
     logger.debug("Shape of inputs (should be (20, 1000):  {}".format(np.shape(x)))
@@ -286,8 +300,38 @@ if __name__ == "__main__":
         max_its=10,
         w=np.zeros(x.shape[0] + 1).astype(np.float32),
     )
-    logger.info("Softmax/Newton's Method complete!")
-
     w = weights[-1]
 
+    logger.info("Generating confusion matrix for Softmax/Newton's Method...")
     confusion_matrix(x, y, w, verbose=True)
+    logger.info("Softmax/Newton's Method complete!")
+
+    def our_perceptron(w):
+        return softmax(w, x, y)
+
+    logger.debug("Running Newton's method on our Perceptron...")
+    (weights, costs) = newtons_method(
+        our_perceptron,
+        max_its=10,
+        w=np.zeros(x.shape[0] + 1).astype(np.float32),
+    )
+    w = weights[-1]
+
+    logger.info("Generating confusion matrix for Perceptron/Newton's Method...")
+    confusion_matrix(x, y, w, verbose=True)
+    logger.info("Perceptron/Newton's Method complete!")
+
+    logger.warning("Beginning to try out gradient descent.")
+    for alpha in [10 ** -1, 10 ** -2, 10 ** -3]:
+        logger.debug("Running GD (alpha = {}) on our Softmax...".format(alpha))
+        (weights, costs) = gradient_descent(
+            our_softmax,
+            alpha=alpha,
+            max_its=10,
+            w=np.zeros(x.shape[0] + 1).astype(np.float64),
+        )
+        w = weights[-1]
+
+        logger.info("Generating confusion matrix for Softmax/Newton's Method...")
+        confusion_matrix(x, y, w, verbose=True)
+        logger.info("GD (alpha = {})/Newton's Method complete!".format(alpha))
