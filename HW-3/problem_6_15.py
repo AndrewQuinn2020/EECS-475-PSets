@@ -94,17 +94,12 @@ def gradient_descent(g, alpha, max_its, w):
     # run the gradient descent loop
     weight_history = [w]  # container for weight history
     cost_history = [g(w)]  # container for corresponding cost function history
-    logger.warning(g(w))
     for k in range(max_its):
-        logger.warning("Loop {}".format(k))
         # evaluate the gradient, store current weights and cost function value
-        logger.warning(gradient(w))
         grad_eval = gradient(w)
-        logger.warning(grad_eval)
 
         # take gradient descent step
         w = w - alpha * grad_eval
-        logger.warning(w)
 
         # record weight and cost
         weight_history.append(w)
@@ -234,7 +229,7 @@ def confusion_matrix(x, y, weights, verbose=False):
     if not verbose:
         logger.disabled = False
 
-    return None
+    return confusion_matrix
 
 
 def spot_check_trained_model(x, y, w, n, verbose=True):
@@ -322,16 +317,21 @@ if __name__ == "__main__":
     logger.info("Perceptron/Newton's Method complete!")
 
     logger.warning("Beginning to try out gradient descent.")
-    for alpha in [10 ** -1, 10 ** -2, 10 ** -3]:
+    logger.warning(
+        "Example starting position: {}".format(
+            np.random.rand(x.shape[0] + 1).astype(np.float32) - 0.5
+        )
+    )
+    for alpha in [10 ** -4, 10 ** -5, 10 ** -6]:
         logger.debug("Running GD (alpha = {}) on our Softmax...".format(alpha))
         (weights, costs) = gradient_descent(
             our_softmax,
             alpha=alpha,
-            max_its=10,
-            w=np.zeros(x.shape[0] + 1).astype(np.float64),
+            max_its=10000,
+            w=np.random.rand(x.shape[0] + 1).astype(np.float32) - 0.5,
         )
         w = weights[-1]
 
-        logger.info("Generating confusion matrix for Softmax/Newton's Method...")
+        logger.info("Generating confusion matrix...")
         confusion_matrix(x, y, w, verbose=True)
-        logger.info("GD (alpha = {})/Newton's Method complete!".format(alpha))
+        logger.info("GD (alpha = {})/Softmax complete!".format(alpha))
