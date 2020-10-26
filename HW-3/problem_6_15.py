@@ -183,6 +183,55 @@ def pickle_costs_and_weights(costs, weights, pname, verbose=False):
     return None
 
 
+def confusion_matrix(x, y, weights, verbose=False):
+    """Returns a 2x2 NumPy matrix of integers corresponding to
+
+                actual y_p
+        +1                    -1
+    [[True_Postiives    False_Negatives]        +1    expected y_p
+     [False_Positives   True_Negatives ]]       -1"""
+
+    if not verbose:
+        logger.disabled = True
+
+    confusion_matrix = np.array([[0, 0], [0, 0]])
+    logger.debug("Initializing confusion_matrix: \n{}".format(confusion_matrix))
+
+    for i in range(0, x.shape[1]):
+        y_pred = model(x[:, i], w)
+        y_true = y[:, i][0]
+
+        if np.sign(model(x[:, i], w)) == np.sign(y[:, i][0]):
+            verdict = "True_"
+            if np.sign(model(x[:, i], w)) > 0:
+                verdict += "Positive"
+                confusion_matrix[0, 0] += 1
+            else:
+                verdict += "Negative"
+                confusion_matrix[1, 1] += 1
+        else:
+            verdict = "False_"
+            if np.sign(model(x[:, i], w)) > 0:
+                verdict += "Positive"
+                confusion_matrix[1, 0] += 1
+            else:
+                verdict += "Negative"
+                confusion_matrix[0, 1] += 1
+
+        logger.debug(
+            "predicted {:>10.4f}     actual {:>10.4f}    verdict {:>20}".format(
+                y_pred, y_true, verdict
+            )
+        )
+
+    logger.debug("Final confusion_matrix: \n{}".format(confusion_matrix))
+
+    if not verbose:
+        logger.disabled = False
+
+    return None
+
+
 def spot_check_trained_model(x, y, w, n, verbose=True):
     """Debug version of check_classify. Prints helpful statements if verbose=True."""
     if not verbose:
@@ -213,7 +262,7 @@ if __name__ == "__main__":
     data = np.loadtxt(credit_dataset_path, delimiter=",")
 
     # get input and output of dataset
-    x = data[:-1, :]
+    x = np.nan_to_num(data[:-1, :])
     y = data[-1:, :]
 
     logger.debug("Shape of inputs (should be (20, 1000):  {}".format(np.shape(x)))
@@ -230,3 +279,15 @@ if __name__ == "__main__":
 
     def our_softmax(w):
         return softmax(w, x, y)
+
+    logger.debug("Running Newton's method on our Softmax...")
+    (weights, costs) = newtons_method(
+        our_softmax,
+        max_its=10,
+        w=np.zeros(x.shape[0] + 1).astype(np.float32),
+    )
+    logger.info("Softmax/Newton's Method complete!")
+
+    w = weights[-1]
+
+    confusion_matrix(x, y, w, verbose=True)
