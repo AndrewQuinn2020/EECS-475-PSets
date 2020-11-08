@@ -50,6 +50,40 @@ datasets_dir = os.path.join(script_dir, "datasets")
 four_class_dataset_path = os.path.join(datasets_dir, "four_class_data.csv")
 
 
+# Compute C linear combinations of the input points, one per classifier.
+def model(x, w):
+    a = w[0] + np.dot(x.T, w[1:])
+    return a.T
+
+
+# The convex softmax cost function
+def softmax(w, x, y):
+    cost = np.sum(np.log(1 + np.exp(-y * model(x, w))))
+    return cost / float(np.size(y))
+
+
+# We are limited to using zero- or first-order techniques for this one, which means
+# gradient descent is the name of the game today.
+def gradient_descent(g, alpha, max_its, w):
+    # compute gradient module using autograd
+    gradient = grad(g)
+
+    # run the gradient descent loop
+    weight_history = [w]  # container for weight history
+    cost_history = [g(w)]  # container for corresponding cost function history
+    for k in range(max_its):
+        # evaluate the gradient, store current weights and cost function value
+        grad_eval = gradient(w)
+
+        # take gradient descent step
+        w = w - alpha * grad_eval
+
+        # record weight and cost
+        weight_history.append(w)
+        cost_history.append(g(w))
+    return weight_history, cost_history
+
+
 if __name__ == "__main__":
     logger.info(
         "EECS 475 - Andrew Quinn - Problem 7.2 - Replicating a 4-Class Toy Model"
@@ -80,12 +114,5 @@ if __name__ == "__main__":
     assert np.shape(x) == (2, 40)
     assert np.shape(y) == (1, 40)
 
-    # In this problem, we want to apply the one-versus-all algorithm.
-    # We aren't given code to do this with, so what we need to do instead
-    # is first run the two-class classifier over and over again, store
-    # the results, and then apply the fusion rule afterwards to make everything
-    # work.
-
-    logger.debug(y[0])
-
-    # If
+    # We're going to attack this with the same gradient descent code we've been using,
+    # since it's most likely been written in a very
