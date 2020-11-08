@@ -62,6 +62,15 @@ def softmax(w, x, y):
     return cost / float(np.size(y))
 
 
+def multiclass_perceptron(w, x, y, lam=10 ** -5):
+    all_evals = model(x, w)
+    a = np.max(all_evals, axis=0)
+    b = all_evals[y.astype(int).flatten(), np.arange(np.size(y))]
+    cost = np.sum(a - b)
+    cost += lam * np.linalg.norm(w[1:, :], "fro") ** 2
+    return cost / float(np.size(y))
+
+
 # We are limited to using zero- or first-order techniques for this one, which means
 # gradient descent is the name of the game today.
 def gradient_descent(g, alpha, max_its, w):
@@ -82,6 +91,36 @@ def gradient_descent(g, alpha, max_its, w):
         weight_history.append(w)
         cost_history.append(g(w))
     return weight_history, cost_history
+
+
+def newtons_method(g, max_its, w, epsilon=(10 ** (-7)), verbose=False):
+    # Compute gradiant and Hessian using autograd.
+    gradient = grad(g)
+    hess = hessian(g)
+
+    # Run Newton's method loop.
+    weight_history = [w]
+    cost_history = [g(w)]
+
+    for k in range(0, max_its):
+        grad_eval = gradient(w)
+        hess_eval = hess(w)
+
+        # Reshape Hessian to be square matrix.
+        hess_eval.shape = (
+            int((np.size(hess_eval)) ** (0.5)),
+            int((np.size(hess_eval)) ** (0.5)),
+        )
+
+        # Solve second-order system for weight update.
+        A = hess_eval + epsilon * np.eye(w.size)
+        b = grad_eval
+        w = np.linalg.solve(A, np.dot(A, w) - b)
+
+        # Record weight and cost.
+        weight_history.append(w)
+        cost_history.append(g(w))
+    return (weight_history, cost_history)
 
 
 if __name__ == "__main__":
@@ -115,4 +154,75 @@ if __name__ == "__main__":
     assert np.shape(y) == (1, 40)
 
     # We're going to attack this with the same gradient descent code we've been using,
-    # since it's most likely been written in a very
+    # since it's most likely been written in a very generalizable way.
+
+    logger.warning("Problem 7.2 asks us to implement and run One-for-All,")
+    logger.warning("but source code isn't actually provided to make that easy --")
+    logger.warning("source code *is* however provided for the Multiclass Perceptron")
+    logger.warning("which optimizes everything simultaneously.")
+    logger.warning("")
+    logger.warning("So what we're going to do is first run the code we're provided,")
+    logger.warning("and /then/ run the 2-stage Softmax one by one as the problem")
+    logger.warning("actually asks us to do.")
+
+    def our_multiclass_perceptron(w):
+        return multiclass_perceptron(w, x, y)
+
+    # We want to initialize a weights matrix of the form (N+1) by C.
+    # We know that in this case, C = 4; N+1, meanwhile, is however
+    # many features the input data gives us.
+    # So here, that should be 3x4.
+    weight_matrix = (np.shape(x)[0] + 1, 4)
+
+    logger.info("Generating random starting weights...")
+    init_weights = (
+        np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32) - 0.5
+    )
+
+    logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
+    (weights, costs) = gradient_descent(
+        our_multiclass_perceptron, alpha=0.001, max_its=1000, w=init_weights
+    )
+    logger.info("Done!")
+    logger.info("Final weights :: {}".format(weights[-1]))
+    logger.info("Final cost    :: {}".format(costs[-1]))
+
+    correct_count = 0
+    misclassified_count = 0
+    for i in range(0, x.shape[1]):
+        print(y[:, i], np.argmax(model(x[:, i], weights[-1])))
+        if y[:, i] == np.argmax(model(x[:, i], weights[-1])):
+            correct_count += 1
+        else:
+            misclassified_count += 1
+    print(correct_count, misclassified_count)
+
+    logger.info("Okay, now let's minimize using the One-against-All approach.")
+    logger.info("To do that, we just go through each classificiation and change")
+    logger.info("the y_p values to -1, +1; then we minimize each weight as we did")
+    logger.info("in the previous homeworks.")
+
+    y_temp = np.zeros(y.shape)
+    print(y_temp)
+    for classification in [0, 1, 2, 3]:
+        logger.info(
+            "Now running One-for-All on classification: {}".format(classification)
+        )
+        for i in range(0, y.shape[1]):
+            if int(y[0, i]) == classification:
+                y_temp[0, i] = 1
+            else:
+                y_temp[0, i] = -1
+        logger.debug("Softmax labels this run :: {}".format(y_temp))
+
+        def our_softmax(w):
+            return softmax(w, x, y_temp)
+
+        (weights, costs) = gradient_descent(
+            our_softmax,
+            alpha=0.1,
+            max_its=1000,
+            w=np.random.rand(x.shape[0] + 1).astype(np.float32) - 0.5,
+        )
+
+        logger.debug("Final weight: {}".format(weights[-1]))
