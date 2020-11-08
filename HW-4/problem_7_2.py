@@ -221,7 +221,7 @@ if __name__ == "__main__":
         (weights, costs) = gradient_descent(
             our_softmax,
             alpha=0.01,
-            max_its=10000,
+            max_its=100000,
             w=np.random.rand(x.shape[0] + 1).astype(np.float32) - 0.5,
         )
 
