@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
     logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
     (weights, costs) = gradient_descent(
-        our_multiclass_perceptron, alpha=0.01, max_its=1000, w=init_weights
+        our_multiclass_perceptron, alpha=0.001, max_its=10000, w=init_weights
     )
     logger.info("Done!")
     logger.info("Final weights :: {}".format(weights[-1]))
