@@ -156,14 +156,14 @@ if __name__ == "__main__":
     # We're going to attack this with the same gradient descent code we've been using,
     # since it's most likely been written in a very generalizable way.
 
-    logger.warning("Problem 7.2 asks us to implement and run One-for-All,")
-    logger.warning("but source code isn't actually provided to make that easy --")
-    logger.warning("source code *is* however provided for the Multiclass Perceptron")
-    logger.warning("which optimizes everything simultaneously.")
-    logger.warning("")
-    logger.warning("So what we're going to do is first run the code we're provided,")
-    logger.warning("and /then/ run the 2-stage Softmax one by one as the problem")
-    logger.warning("actually asks us to do.")
+    logger.info("Problem 7.2 asks us to implement and run One-for-All,")
+    logger.info("but source code isn't actually provided to make that easy --")
+    logger.info("source code *is* however provided for the Multiclass Perceptron")
+    logger.info("which optimizes everything simultaneously.")
+    logger.info("")
+    logger.info("So what we're going to do is first run the code we're provided,")
+    logger.info("and /then/ run the 2-stage Softmax one by one as the problem")
+    logger.info("actually asks us to do.")
 
     def our_multiclass_perceptron(w):
         return multiclass_perceptron(w, x, y)
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
     logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
     (weights, costs) = gradient_descent(
-        our_multiclass_perceptron, alpha=0.001, max_its=1000, w=init_weights
+        our_multiclass_perceptron, alpha=0.001, max_its=10000, w=init_weights
     )
     logger.info("Done!")
     logger.info("Final weights :: {}".format(weights[-1]))
@@ -190,12 +190,10 @@ if __name__ == "__main__":
     correct_count = 0
     misclassified_count = 0
     for i in range(0, x.shape[1]):
-        print(y[:, i], np.argmax(model(x[:, i], weights[-1])))
         if y[:, i] == np.argmax(model(x[:, i], weights[-1])):
             correct_count += 1
         else:
             misclassified_count += 1
-    print(correct_count, misclassified_count)
 
     logger.info("Okay, now let's minimize using the One-against-All approach.")
     logger.info("To do that, we just go through each classificiation and change")
@@ -203,7 +201,9 @@ if __name__ == "__main__":
     logger.info("in the previous homeworks.")
 
     y_temp = np.zeros(y.shape)
-    print(y_temp)
+
+    one_for_all_weights = []
+
     for classification in [0, 1, 2, 3]:
         logger.info(
             "Now running One-for-All on classification: {}".format(classification)
@@ -220,9 +220,35 @@ if __name__ == "__main__":
 
         (weights, costs) = gradient_descent(
             our_softmax,
-            alpha=0.1,
-            max_its=1000,
+            alpha=0.01,
+            max_its=10000,
             w=np.random.rand(x.shape[0] + 1).astype(np.float32) - 0.5,
         )
 
         logger.debug("Final weight: {}".format(weights[-1]))
+
+        one_for_all_weights.append(weights[-1])
+
+    # np.argmax(model(x[:, i], weights[-1]))
+    correct_count = 0
+    misclassified_count = 0
+    for i in range(0, x.shape[1]):
+        one_for_all_results = np.array(
+            [
+                [
+                    model(x[:, i], one_for_all_weights[0]),
+                    model(x[:, i], one_for_all_weights[1]),
+                    model(x[:, i], one_for_all_weights[2]),
+                    model(x[:, i], one_for_all_weights[3]),
+                ]
+            ]
+        )
+        if y[:, i] == np.argmax(one_for_all_results):
+            correct_count += 1
+        else:
+            misclassified_count += 1
+    logger.warning(
+        "ONE-FOR-ALL RESULTS :: Correct {}, misses {}".format(
+            correct_count, misclassified_count
+        )
+    )
