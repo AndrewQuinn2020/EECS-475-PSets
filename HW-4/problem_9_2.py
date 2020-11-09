@@ -15,6 +15,10 @@ from autograd import grad, hessian
 from matplotlib import pyplot as plt
 from sklearn.datasets import fetch_openml
 
+# This problem in particular can take a LONG time to work. Unless you're *absolutely
+# sure* your code is working, I would leave this number very low.
+ITERATIONS = 3
+
 logger = logging.getLogger(__name__)
 # Change this to get more, or fewer, error messages.
 #   DEBUG = Show me everything.
@@ -37,6 +41,11 @@ pickle_dir = os.path.join(script_dir, "pickles")
 datasets_dir = os.path.join(script_dir, "datasets")
 
 nmist_local_dataset_path = os.path.join(datasets_dir, "nmist_local_data.npz")
+
+
+# Given a set of input features x, fill in any `nan` values with the mean of the row.
+def nans_to_row_mean(inputs):
+    pass
 
 
 # Compute C linear combinations of the input points, one per classifier.
@@ -62,13 +71,17 @@ def multiclass_perceptron(w, x, y, lam=10 ** -5):
 
 # We are limited to using zero- or first-order techniques for this one, which means
 # gradient descent is the name of the game today.
-def gradient_descent(g, alpha, max_its, w):
+def gradient_descent(g, alpha, max_its, w, x, y):
     # compute gradient module using autograd
     gradient = grad(g)
 
     # run the gradient descent loop
     weight_history = [w]  # container for weight history
     cost_history = [g(w)]  # container for corresponding cost function history
+    misses_history = [
+        check_classify(w, x, y)[1]
+    ]  # container for how many points get *mis*classified over time.
+
     for k in range(max_its):
         # evaluate the gradient, store current weights and cost function value
         grad_eval = gradient(w)
@@ -79,7 +92,22 @@ def gradient_descent(g, alpha, max_its, w):
         # record weight and cost
         weight_history.append(w)
         cost_history.append(g(w))
-    return weight_history, cost_history
+        misses_history.append(check_classify(w, x, y)[1])
+
+    return weight_history, cost_history, misses_history
+
+
+def check_classify(w, x, y):
+    """Given a set of weights, a set of input features, and a set of output features, return a 2-tuple of how
+    many inputs get correctly classified."""
+    correct_count = 0
+    misclassified_count = 0
+    for i in range(0, x.shape[1]):
+        if y[:, i] == np.argmax(model(x[:, i], w)):
+            correct_count += 1
+        else:
+            misclassified_count += 1
+    return (correct_count, misclassified_count)
 
 
 def newtons_method(g, max_its, w, epsilon=(10 ** (-7)), verbose=False):
@@ -137,14 +165,59 @@ if __name__ == "__main__":
         logger.info("Save completed!")
         logger.info("You should now be able to load them back anytime using\n")
         logger.info("    numpy.load('{}')\n".format(nmist_local_dataset_path))
+        logger.warning(
+            "We will load locally from here on out unless you delete the file."
+        )
     else:
-        logger.info("Loading data locally from {}".format(nmist_local_dataset_path))
+        logger.warning("Loading local data from {}...".format(nmist_local_dataset_path))
         npzfile = np.load(nmist_local_dataset_path)
-        logger.info("Files in the local archive: {}".format(npzfile.files))
         x = npzfile["arr_0"]
         y = npzfile["arr_1"]
+        logger.info("Local data loaded!")
 
     assert np.shape(x) == (784, 70000)
     assert np.shape(y) == (1, 70000)
 
-    logger.info("")
+    logger.debug("What we want to do here is compare a 'traditional' Softmax descent")
+    logger.debug("to a Softmax descent based on the edge histogram data. (I'm not")
+    logger.debug("going to implement minibatch, because we haven't done that before,")
+    logger.debug("and it would take too much time.")
+
+    # We're going to attack this with the same gradient descent code we've been using,
+    # since it's most likely been written in a very generalizable way.
+
+    def our_multiclass_perceptron(w):
+        return multiclass_perceptron(w, x, y)
+
+    # We want to initialize a weights matrix of the form (N+1) by C. We know that in
+    # this case, C = 10, because there are 10 digits; N+1, meanwhile, is however many
+    # features the input data gives us. So here, that should be 785 x 10.
+    weight_matrix = (np.shape(x)[0] + 1, 10)
+
+    logger.info("Generating random starting weights...")
+    init_weights = (
+        np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32) - 0.5
+    ) * 255
+
+    logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
+    (weights, costs, misses) = gradient_descent(
+        our_multiclass_perceptron,
+        alpha=0.001,
+        max_its=ITERATIONS,
+        w=init_weights,
+        x=x,
+        y=y,
+    )
+    logger.info("Done!")
+    logger.info("Final weights :: {}".format(weights[-1]))
+    logger.info("Final cost    :: {}".format(costs[-1]))
+    logger.info("Final misses  :: {}".format(misses[-1]))
+
+    (correct_count, misclassified_count) = check_classify(weights[-1], x, y)
+    logger.warning(
+        "MULTICLASS PERCEPTRON RESULTS: {}, {}".format(
+            correct_count, misclassified_count
+        )
+    )
+
+    logger.info("Okay, great! Now, we want to ")
