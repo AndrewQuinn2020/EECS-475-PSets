@@ -139,7 +139,7 @@ if __name__ == "__main__":
         logger.info("Saving locally to {}".format(nmist_local_dataset_path))
         np.savez(nmist_local_dataset_path, x, y)
         logger.info("Save completed!")
-        logger.info("You should now be able to load them back using\n")
+        logger.info("You should now be able to load them back anytime using\n")
         logger.info("    numpy.load('{}')\n".format(nmist_local_dataset_path))
     else:
         logger.warning("Loading data locally from {}".format(nmist_local_dataset_path))
