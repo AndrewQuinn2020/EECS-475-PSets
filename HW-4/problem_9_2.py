@@ -124,7 +124,7 @@ if __name__ == "__main__":
             os.makedirs(dir)
 
     if not os.path.exists(nmist_local_dataset_path):
-        logger.warning("NMIST 784 data isn't locally pickled! This might take a bit.")
+        logger.warning("NMIST 784 data isn't locally archived! This might take a bit.")
         # import MNIST
         logger.info("Fetching NMIST 784...")
         x, y = fetch_openml("mnist_784", version=1, return_X_y=True)
@@ -132,23 +132,19 @@ if __name__ == "__main__":
         # re-shape input/output data
         x = x.T
         y = np.array([int(v) for v in y])[np.newaxis, :]
-
-        assert np.shape(x) == (784, 70000)
-        assert np.shape(y) == (1, 70000)
-
         logger.info("Saving locally to {}".format(nmist_local_dataset_path))
         np.savez(nmist_local_dataset_path, x, y)
         logger.info("Save completed!")
         logger.info("You should now be able to load them back anytime using\n")
         logger.info("    numpy.load('{}')\n".format(nmist_local_dataset_path))
     else:
-        logger.warning("Loading data locally from {}".format(nmist_local_dataset_path))
+        logger.info("Loading data locally from {}".format(nmist_local_dataset_path))
         npzfile = np.load(nmist_local_dataset_path)
         logger.info("Files in the local archive: {}".format(npzfile.files))
         x = npzfile["arr_0"]
         y = npzfile["arr_1"]
 
-        assert np.shape(x) == (784, 70000)
-        assert np.shape(y) == (1, 70000)
+    assert np.shape(x) == (784, 70000)
+    assert np.shape(y) == (1, 70000)
 
     logger.info("")
