@@ -18,7 +18,7 @@ from skimage import feature
 
 # This problem in particular can take a LONG time to work. Unless you're *absolutely
 # sure* your code is working, I would leave this number very low.
-ITERATIONS = 10
+ITERATIONS = 100
 
 logger = logging.getLogger(__name__)
 # Change this to get more, or fewer, error messages.
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
     (weights, costs, misses) = gradient_descent(
         our_multiclass_perceptron,
-        alpha=0.001,
+        alpha=0.01,
         max_its=ITERATIONS,
         w=init_weights,
         x=x,
@@ -249,7 +249,9 @@ if __name__ == "__main__":
         # import MNIST
         for i in range(x.shape[1]):
             logger.info("Canny edge-detecting input {}".format(i))
-            x[:, i] = feature.canny(x[:, i].reshape(28, 28)).astype(int).reshape(784)
+            x[:, i] = (
+                feature.canny(x[:, i].reshape(28, 28)).astype(int).reshape(784) * 255
+            )
         logger.info("Saving locally to {}".format(nmist_local_canny_dataset_path))
         np.savez(nmist_local_canny_dataset_path, x, y)
         logger.info("Save completed!")
@@ -274,9 +276,12 @@ if __name__ == "__main__":
     # this case, C = 10, because there are 10 digits; N+1, meanwhile, is however many
     # features the input data gives us. So here, that should be 785 x 10.
     # weight_matrix = (np.shape(x)[0] + 1, 10)
+    weight_matrix = (np.shape(x)[0] + 1, 10)
 
     logger.info("Generating random starting weights...")
-    init_weights = np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32)
+    init_weights = (
+        np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32) - 0.5
+    )
 
     logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
     (weights, costs, misses) = gradient_descent(
@@ -312,6 +317,7 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig(os.path.join(figs_dir, "problem_9_2_misses.png"))
     plt.close()
+    logger.warning("Misses plot generated.")
 
     plt.scatter(list(range(len(original_costs))), original_costs)
     plt.scatter(list(range(len(edge_costs))), edge_costs)
@@ -321,3 +327,4 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig(os.path.join(figs_dir, "problem_9_2_costs.png"))
     plt.close()
+    logger.warning("Costs plot generated.")
