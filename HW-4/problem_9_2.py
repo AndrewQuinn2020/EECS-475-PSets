@@ -201,7 +201,7 @@ if __name__ == "__main__":
     logger.info("Generating random starting weights...")
     init_weights = (
         np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32) - 0.5
-    ) * 255
+    )
 
     logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
     (weights, costs, misses) = gradient_descent(
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
     (weights, costs, misses) = gradient_descent(
         our_multiclass_perceptron,
-        alpha=0.001,
+        alpha=0.01,
         max_its=ITERATIONS,
         w=init_weights,
         x=x,
