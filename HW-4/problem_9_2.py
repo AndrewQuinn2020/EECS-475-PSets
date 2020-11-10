@@ -18,7 +18,7 @@ from skimage import feature
 
 # This problem in particular can take a LONG time to work. Unless you're *absolutely
 # sure* your code is working, I would leave this number very low.
-ITERATIONS = 3
+ITERATIONS = 10
 
 logger = logging.getLogger(__name__)
 # Change this to get more, or fewer, error messages.
@@ -213,9 +213,12 @@ if __name__ == "__main__":
         y=y,
     )
     logger.info("Done!")
-    logger.info("Final weights :: {}".format(weights[-1]))
     logger.info("Final cost    :: {}".format(costs[-1]))
     logger.info("Final misses  :: {}".format(misses[-1]))
+
+    original_weights = weights
+    original_costs = costs
+    original_misses = misses
 
     (correct_count, misclassified_count) = check_classify(weights[-1], x, y)
     logger.warning(
@@ -285,7 +288,6 @@ if __name__ == "__main__":
         y=y,
     )
     logger.info("Done!")
-    logger.info("Final weights :: {}".format(weights[-1]))
     logger.info("Final cost    :: {}".format(costs[-1]))
     logger.info("Final misses  :: {}".format(misses[-1]))
 
@@ -295,3 +297,27 @@ if __name__ == "__main__":
             correct_count, misclassified_count
         )
     )
+
+    edge_weights = weights
+    edge_costs = costs
+    edge_misses = misses
+
+    # Time to create some plots.
+
+    plt.scatter(list(range(len(original_misses))), original_misses)
+    plt.scatter(list(range(len(edge_misses))), edge_misses)
+    plt.title("Problem 9.2 - Misclassifications, original vs. edge")
+    plt.ylabel("Misses")
+    plt.xlabel("Iterations")
+    plt.draw()
+    plt.savefig(os.path.join(figs_dir, "problem_9_2_misses.png"))
+    plt.close()
+
+    plt.scatter(list(range(len(original_costs))), original_costs)
+    plt.scatter(list(range(len(edge_costs))), edge_costs)
+    plt.title("Problem 9.2 - Cost functions, original vs. edge")
+    plt.ylabel("Costs")
+    plt.xlabel("Iterations")
+    plt.draw()
+    plt.savefig(os.path.join(figs_dir, "problem_9_2_costs.png"))
+    plt.close()
