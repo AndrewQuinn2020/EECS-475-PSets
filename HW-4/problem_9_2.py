@@ -18,7 +18,7 @@ from skimage import feature
 
 # This problem in particular can take a LONG time to work. Unless you're *absolutely
 # sure* your code is working, I would leave this number very low.
-ITERATIONS = 100
+ITERATIONS = 10
 
 logger = logging.getLogger(__name__)
 # Change this to get more, or fewer, error messages.
