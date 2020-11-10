@@ -14,6 +14,7 @@ import requests
 from autograd import grad, hessian
 from matplotlib import pyplot as plt
 from sklearn.datasets import fetch_openml
+from skimage import feature
 
 # This problem in particular can take a LONG time to work. Unless you're *absolutely
 # sure* your code is working, I would leave this number very low.
@@ -41,6 +42,9 @@ pickle_dir = os.path.join(script_dir, "pickles")
 datasets_dir = os.path.join(script_dir, "datasets")
 
 nmist_local_dataset_path = os.path.join(datasets_dir, "nmist_local_data.npz")
+nmist_local_canny_dataset_path = os.path.join(
+    datasets_dir, "nmist_local_data_canny.npz"
+)
 
 
 # Given a set of input features x, fill in any `nan` values with the mean of the row.
@@ -220,4 +224,74 @@ if __name__ == "__main__":
         )
     )
 
-    logger.info("Okay, great! Now, we want to ")
+    logger.info("Okay, great! Now, we want to implement an EDGE HISTOGRAM model.")
+    logger.info("We have 784 features for each input, and 784 = 28 * 28. Therefore,")
+    logger.info("it is reasonable to assume that these are just greyscale color values")
+    logger.info("of tiny handwritten digits. If we can turn them into just 0s and 1s,")
+    logger.info("for black and whites respectively, we should be able to eke out some")
+    logger.info("better performance. For example, is we had 49 features, we would want")
+    logger.info(
+        "to turn all the low-greyscale values into 0s so a seven might look like\n"
+    )
+    logger.info("       ")
+    logger.info(" 777777")
+    logger.info("    77 ")
+    logger.info("   77  ")
+    logger.info("  77   ")
+    logger.info(" 77    ")
+    logger.info("       \n")
+
+    if not os.path.exists(nmist_local_canny_dataset_path):
+        logger.warning("NMIST 784 Canny data isn't locally archived! Creating now.")
+        # import MNIST
+        for i in range(x.shape[1]):
+            logger.info("Canny edge-detecting input {}".format(i))
+            x[:, i] = feature.canny(x[:, i].reshape(28, 28)).astype(int).reshape(784)
+        logger.info("Saving locally to {}".format(nmist_local_canny_dataset_path))
+        np.savez(nmist_local_canny_dataset_path, x, y)
+        logger.info("Save completed!")
+        logger.info("You should now be able to load them back anytime using\n")
+        logger.info("    numpy.load('{}')\n".format(nmist_local_canny_dataset_path))
+        logger.warning(
+            "We will load locally from here on out unless you delete the file."
+        )
+    else:
+        logger.warning(
+            "Loading local data from {}...".format(nmist_local_canny_dataset_path)
+        )
+        npzfile = np.load(nmist_local_canny_dataset_path)
+        x = npzfile["arr_0"]
+        y = npzfile["arr_1"]
+        logger.info("Local data loaded!")
+
+    def our_multiclass_perceptron(w):
+        return multiclass_perceptron(w, x, y)
+
+    # We want to initialize a weights matrix of the form (N+1) by C. We know that in
+    # this case, C = 10, because there are 10 digits; N+1, meanwhile, is however many
+    # features the input data gives us. So here, that should be 785 x 10.
+    # weight_matrix = (np.shape(x)[0] + 1, 10)
+
+    logger.info("Generating random starting weights...")
+    init_weights = np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32)
+
+    logger.info("Minimizing the Multiclass Perceptron cost function via GD...")
+    (weights, costs, misses) = gradient_descent(
+        our_multiclass_perceptron,
+        alpha=0.001,
+        max_its=ITERATIONS,
+        w=init_weights,
+        x=x,
+        y=y,
+    )
+    logger.info("Done!")
+    logger.info("Final weights :: {}".format(weights[-1]))
+    logger.info("Final cost    :: {}".format(costs[-1]))
+    logger.info("Final misses  :: {}".format(misses[-1]))
+
+    (correct_count, misclassified_count) = check_classify(weights[-1], x, y)
+    logger.warning(
+        "MULTICLASS PERCEPTRON RESULTS: {}, {}".format(
+            correct_count, misclassified_count
+        )
+    )
