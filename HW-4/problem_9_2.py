@@ -183,9 +183,7 @@ if __name__ == "__main__":
     assert np.shape(y) == (1, 70000)
 
     logger.debug("What we want to do here is compare a 'traditional' Softmax descent")
-    logger.debug("to a Softmax descent based on the edge histogram data. (I'm not")
-    logger.debug("going to implement minibatch, because we haven't done that before,")
-    logger.debug("and it would take too much time.")
+    logger.debug("to a Softmax descent based on the edge histogram data.")
 
     # We're going to attack this with the same gradient descent code we've been using,
     # since it's most likely been written in a very generalizable way.
