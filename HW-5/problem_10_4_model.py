@@ -133,7 +133,7 @@ def linearize(y):
 
 
 def delinearize(y):
-    return y ** 2
+    return 2 ** y
 
 
 if __name__ == "__main__":
@@ -243,10 +243,38 @@ if __name__ == "__main__":
     # Now we want to compare what our model predicts, with the actual data.
     plt.scatter(x - x[0], linearize(y))
     plt.scatter(x - x[0], model(x_norm, weights[-1]))
-    plt.title("Problem 10.4 - Original data, run through log_2, years normalized")
+    plt.title(
+        "Problem 10.4 - Model vs Output - Original data, run through log_2, years normalized"
+    )
     plt.ylabel("(Year - Start Year)")
     plt.xlabel("ln_2(Transistor count)")
     plt.draw()
     plt.savefig(os.path.join(figs_dir, "problem_10_4_model_raw_vs_cleaned_up_data.png"))
+    plt.close()
+    logger.warning("Model output vs cleaned up data graph produced.")
+
+    # Now we want to compare what our model predicts, with the actual data.
+    plt.scatter(x, linearize(y))
+    plt.scatter(x, model(x_norm, weights[-1]))
+    plt.title("Problem 10.4 - Model vs Output - Original data, run through log_2")
+    plt.ylabel("(Year - Start Year)")
+    plt.xlabel("ln_2(Transistor count)")
+    plt.draw()
+    plt.savefig(
+        os.path.join(
+            figs_dir, "problem_10_4_model_raw_vs_cleaned_up_data_original_years.png"
+        )
+    )
+    plt.close()
+    logger.warning("Model output vs cleaned up data graph produced.")
+
+    # Now we want to compare what our model predicts, with the actual data.
+    plt.scatter(x, y)
+    plt.scatter(x, delinearize(model(x_norm, weights[-1])))
+    plt.title("Problem 10.4 - Model vs Output - Original data, run through log_2")
+    plt.ylabel("(Year - Start Year)")
+    plt.xlabel("ln_2(Transistor count)")
+    plt.draw()
+    plt.savefig(os.path.join(figs_dir, "problem_10_4_model_vs_output.png"))
     plt.close()
     logger.warning("Model output vs cleaned up data graph produced.")
