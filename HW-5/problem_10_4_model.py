@@ -179,8 +179,8 @@ if __name__ == "__main__":
     # This code reproduces the original graph.
     plt.scatter(x, y)
     plt.title("Problem 10.4 - Original graph reproduction")
-    plt.ylabel("Year")
-    plt.xlabel("Transistor count")
+    plt.xlabel("Year")
+    plt.ylabel("Transistor count")
     plt.draw()
     plt.savefig(os.path.join(figs_dir, "problem_10_4_original.png"))
     plt.close()
@@ -189,8 +189,8 @@ if __name__ == "__main__":
     # This code linearizes y so we can spot-check it.
     plt.scatter(x, linearize(y))
     plt.title("Problem 10.4 - Original data, run through log_2")
-    plt.ylabel("Year")
-    plt.xlabel("ln_2(Transistor count)")
+    plt.xlabel("Year")
+    plt.ylabel("ln_2(Transistor count)")
     plt.draw()
     plt.savefig(os.path.join(figs_dir, "problem_10_4_output_linearized.png"))
     plt.close()
@@ -199,8 +199,8 @@ if __name__ == "__main__":
     # Finally let's see how it looks when we scale it back.
     plt.scatter(x - x[0], linearize(y))
     plt.title("Problem 10.4 - Original data, run through log_2, years normalized")
-    plt.ylabel("(Year - Start Year)")
-    plt.xlabel("ln_2(Transistor count)")
+    plt.xlabel("(Year - Start Year)")
+    plt.ylabel("ln_2(Transistor count)")
     plt.draw()
     plt.savefig(
         os.path.join(figs_dir, "problem_10_4_output_linearized_year_pulled_back.png")
@@ -212,9 +212,6 @@ if __name__ == "__main__":
     y_norm = np.transpose(linearize(y))
 
     assert x_norm.shape == y_norm.shape
-
-    print(x_norm)
-    print(y_norm)
 
     def our_least_squares(w):
         return least_squares(w, x_norm, y_norm)
@@ -237,17 +234,14 @@ if __name__ == "__main__":
     logger.info("Final weights :: {}".format(weights[-1]))
     logger.info("Final cost    :: {}".format(costs[-1]))
 
-    # Great! Let's see how it stacks up.
-    print(model(x_norm, weights[-1]))
-
     # Now we want to compare what our model predicts, with the actual data.
     plt.scatter(x - x[0], linearize(y))
     plt.scatter(x - x[0], model(x_norm, weights[-1]))
     plt.title(
         "Problem 10.4 - Model vs Output - Original data, run through log_2, years normalized"
     )
-    plt.ylabel("(Year - Start Year)")
-    plt.xlabel("ln_2(Transistor count)")
+    plt.xlabel("(Year - Start Year)")
+    plt.ylabel("ln_2(Transistor count)")
     plt.draw()
     plt.savefig(os.path.join(figs_dir, "problem_10_4_model_raw_vs_cleaned_up_data.png"))
     plt.close()
@@ -257,8 +251,8 @@ if __name__ == "__main__":
     plt.scatter(x, linearize(y))
     plt.scatter(x, model(x_norm, weights[-1]))
     plt.title("Problem 10.4 - Model vs Output - Original data, run through log_2")
-    plt.ylabel("(Year - Start Year)")
-    plt.xlabel("ln_2(Transistor count)")
+    plt.xlabel("Year")
+    plt.ylabel("ln_2(Transistor count)")
     plt.draw()
     plt.savefig(
         os.path.join(
@@ -271,9 +265,9 @@ if __name__ == "__main__":
     # Now we want to compare what our model predicts, with the actual data.
     plt.scatter(x, y)
     plt.scatter(x, delinearize(model(x_norm, weights[-1])))
-    plt.title("Problem 10.4 - Model vs Output - Original data, run through log_2")
-    plt.ylabel("(Year - Start Year)")
-    plt.xlabel("ln_2(Transistor count)")
+    plt.title("Problem 10.4 - Model vs Output - Original data")
+    plt.xlabel("Year")
+    plt.ylabel("Transistor count")
     plt.draw()
     plt.savefig(os.path.join(figs_dir, "problem_10_4_model_vs_output.png"))
     plt.close()
