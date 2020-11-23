@@ -55,6 +55,12 @@ def model(x, w):
     return a.T
 
 
+# The Least squares cost function.
+def least_squares(w, x, y):
+    cost = np.sum((model(x, w) - y) ** 2)
+    return cost / float(np.size(y))
+
+
 # The convex softmax cost function
 def softmax(w, x, y):
     cost = np.sum(np.log(1 + np.exp(-y * model(x, w))))
@@ -190,6 +196,7 @@ if __name__ == "__main__":
     plt.close()
     logger.warning("Output-linearized graph reproducted.")
 
+    # Finally let's see how it looks when we scale it back.
     plt.scatter(x - x[0], linearize(y))
     plt.title("Problem 10.4 - Original data, run through log_2, years normalized")
     plt.ylabel("(Year - Start Year)")
@@ -200,3 +207,46 @@ if __name__ == "__main__":
     )
     plt.close()
     logger.warning("Output-linearized, year-corrected graph reproducted.")
+
+    x_norm = np.transpose(x - x[0])
+    y_norm = np.transpose(linearize(y))
+
+    assert x_norm.shape == y_norm.shape
+
+    print(x_norm)
+    print(y_norm)
+
+    def our_least_squares(w):
+        return least_squares(w, x_norm, y_norm)
+
+    # We want to initialize a weights matrix of the form (N+1) by C. We know that in
+    # this case, C = 10, because there are 10 digits; N+1, meanwhile, is however many
+    # features the input data gives us. So here, that should be 785 x 10.
+    weight_matrix = (np.shape(x_norm)[0] + 1, 1)
+
+    logger.info("Generating random starting weights...")
+    init_weights = (
+        np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32) - 0.5
+    )
+
+    logger.info("Minimizing the Least Squares cost function via GD...")
+    (weights, costs) = gradient_descent(
+        our_least_squares, alpha=0.001, max_its=10000, w=init_weights
+    )
+    logger.info("Done!")
+    logger.info("Final weights :: {}".format(weights[-1]))
+    logger.info("Final cost    :: {}".format(costs[-1]))
+
+    # Great! Let's see how it stacks up.
+    print(model(x_norm, weights[-1]))
+
+    # Now we want to compare what our model predicts, with the actual data.
+    plt.scatter(x - x[0], linearize(y))
+    plt.scatter(x - x[0], model(x_norm, weights[-1]))
+    plt.title("Problem 10.4 - Original data, run through log_2, years normalized")
+    plt.ylabel("(Year - Start Year)")
+    plt.xlabel("ln_2(Transistor count)")
+    plt.draw()
+    plt.savefig(os.path.join(figs_dir, "problem_10_4_model_raw_vs_cleaned_up_data.png"))
+    plt.close()
+    logger.warning("Model output vs cleaned up data graph produced.")
