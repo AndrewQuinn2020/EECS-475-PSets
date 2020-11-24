@@ -49,30 +49,18 @@ datasets_dir = os.path.join(script_dir, "datasets")
 diagonal_stripes_dataset_path = os.path.join(datasets_dir, "diagonal_stripes.csv")
 
 
-# Compute C linear combinations of the input points, one per classifier.
-def model(x, w):
-    a = w[0] + np.dot(x.T, w[1:])
+def model(x, theta):
+    f = feature_transform(x, theta[0])
+    a = theta[1][0] + np.dot(f.T, theta[1][1:])
     return a.T
 
 
 # The Least squares cost function.
 def least_squares(w, x, y):
+    print(model(x, w).shape)
+    print(model(x, w).reshape(1, -1).shape)
+    print(y.shape)
     cost = np.sum((model(x, w) - y) ** 2)
-    return cost / float(np.size(y))
-
-
-# The convex softmax cost function
-def softmax(w, x, y):
-    cost = np.sum(np.log(1 + np.exp(-y * model(x, w))))
-    return cost / float(np.size(y))
-
-
-def multiclass_perceptron(w, x, y, lam=10 ** -5):
-    all_evals = model(x, w)
-    a = np.max(all_evals, axis=0)
-    b = all_evals[y.astype(int).flatten(), np.arange(np.size(y))]
-    cost = np.sum(a - b)
-    cost += lam * np.linalg.norm(w[1:, :], "fro") ** 2
     return cost / float(np.size(y))
 
 
@@ -98,47 +86,15 @@ def gradient_descent(g, alpha, max_its, w):
     return weight_history, cost_history
 
 
-def newtons_method(g, max_its, w, epsilon=(10 ** (-7)), verbose=False):
-    # Compute gradiant and Hessian using autograd.
-    gradient = grad(g)
-    hess = hessian(g)
-
-    # Run Newton's method loop.
-    weight_history = [w]
-    cost_history = [g(w)]
-
-    for k in range(0, max_its):
-        grad_eval = gradient(w)
-        hess_eval = hess(w)
-
-        # Reshape Hessian to be square matrix.
-        hess_eval.shape = (
-            int((np.size(hess_eval)) ** (0.5)),
-            int((np.size(hess_eval)) ** (0.5)),
-        )
-
-        # Solve second-order system for weight update.
-        A = hess_eval + epsilon * np.eye(w.size)
-        b = grad_eval
-        w = np.linalg.solve(A, np.dot(A, w) - b)
-
-        # Record weight and cost.
-        weight_history.append(w)
-        cost_history.append(g(w))
-    return (weight_history, cost_history)
-
-
-def linearize(y):
-    return np.log2(y)
-
-
-def delinearize(y):
-    return 2 ** y
+def feature_transform(x, w):
+    row = w[0] + np.sin(w[1] * (x[0, :] + x[1, :]) - w[2])
+    return np.array([row, row])
 
 
 if __name__ == "__main__":
     logger.info(
-        "EECS 475 - Andrew Quinn - Problem 7.2 - Replicating a 4-Class Toy Model"
+        "EECS 475 - Andrew Quinn - "
+        "Problem 10.8 - Training a Diagonal Stripes differentiator"
     )
     logger.info("-" * (88 - 11))
     logger.info(
@@ -154,20 +110,70 @@ if __name__ == "__main__":
             os.makedirs(dir)
 
     if not os.path.exists(diagonal_stripes_dataset_path):
-        logger.warning("Diagonal stripes dataset is missing... Downloading.")
+        logger.warning("Transistor counts dataset is missing... Downloading.")
         with open(diagonal_stripes_dataset_path, "wb") as f:
             f.write(
                 requests.get(diagonal_stripes_data_url, allow_redirects=True).content
             )
 
-    # Load in data.
     data = np.loadtxt(diagonal_stripes_dataset_path, delimiter=",")
 
     x = data[:2, :]
     y = data[2:, :]
 
-    assert np.shape(x) == (2, 300)
-    assert np.shape(y) == (1, 300)
+    assert x.shape == (2, 300)
+    assert y.shape == (1, 300)
 
-    print(x)
-    print(y)
+    # First let's test the feature transform code, to make sure it's giving us what we want.
+    feature_test_array = np.array(
+        [
+            [0, 0, np.pi / 2, np.pi / 2, np.pi, np.pi],
+            [0, np.pi / 2, np.pi / 2, 0, 0, np.pi],
+        ]
+    )
+    logger.debug("Testing our feature transform.")
+    logger.debug("Test array:\n{}".format(feature_test_array))
+    logger.debug(
+        "\n{}".format(
+            np.round(feature_transform(feature_test_array, np.array([0, 1, 0])))
+        )
+    )
+    logger.debug(
+        "\n{}".format(
+            np.round(feature_transform(feature_test_array, np.array([1, 1, 0])))
+        )
+    )
+    logger.debug(
+        "\n{}".format(
+            np.round(feature_transform(feature_test_array, np.array([1, 1, np.pi / 2])))
+        )
+    )
+
+    test_theta = np.array([[0, 1, 2], [3, 4, 5]])
+    logger.debug("Testing our nonlinear model code.")
+    logger.debug("test_theta = \n{}".format(test_theta))
+    logger.debug("test_theta[0] = \n{}".format(test_theta[0]))
+    logger.debug("test_theta[1][0] = \n{}".format(test_theta[1][0]))
+    logger.debug("test_theta[1][1:] = \n{}".format(test_theta[1][1:]))
+    logger.info(feature_transform(x, test_theta[0]))
+
+    logger.info(model(x, test_theta))
+    logger.info(least_squares(test_theta, x, y))
+
+    def our_least_squares(w):
+        return least_squares(w, x, y)
+
+    weight_matrix = (np.shape(x)[0] + 1, 2)
+
+    logger.info("Generating random starting weights...")
+    init_weights = (
+        np.random.rand(weight_matrix[0], weight_matrix[1]).astype(np.float32) - 0.5
+    )
+
+    logger.info("Minimizing the Least Squares cost function via GD...")
+    (weights, costs) = gradient_descent(
+        our_least_squares, alpha=0.001, max_its=10000, w=init_weights
+    )
+    logger.info("Done!")
+    logger.info("Final weights :: {}".format(weights[-1]))
+    logger.info("Final cost    :: {}".format(costs[-1]))
